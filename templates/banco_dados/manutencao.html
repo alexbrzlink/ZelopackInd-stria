@@ -1,0 +1,959 @@
+{% extends 'base.html' %}
+
+{% block title %}Manutenção do Banco de Dados - Zelopack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-header {
+        background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .section-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-header p {
+        opacity: 0.85;
+        max-width: 80%;
+    }
+    
+    .maintenance-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .maintenance-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .maintenance-card .card-header {
+        background-color: #f8f9fa;
+        border-bottom: none;
+        padding: 1.25rem;
+    }
+    
+    .maintenance-card .card-title {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .maintenance-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .db-stats {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-item {
+        margin-bottom: 1.25rem;
+    }
+    
+    .stat-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .progress-thin {
+        height: 6px;
+        margin-top: 0.5rem;
+    }
+    
+    .query-card {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: #f8f9fa;
+    }
+    
+    .query-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .query-meta .badge {
+        font-size: 0.75rem;
+    }
+    
+    .query-text {
+        font-family: 'Consolas', 'Monaco', monospace;
+        background-color: #212529;
+        color: #f8f9fa;
+        padding: 0.75rem;
+        border-radius: 4px;
+        overflow-x: auto;
+        font-size: 0.9rem;
+    }
+    
+    .query-text pre {
+        margin: 0;
+    }
+    
+    .task-icon {
+        width: 40px;
+        height: 40px;
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-right: 1rem;
+    }
+    
+    .task-icon.warning {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+    
+    .task-icon.success {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .task-icon.danger {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .task-details {
+        flex: 1;
+    }
+    
+    .task-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .task-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .results-panel {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        max-height: 300px;
+        overflow-y: auto;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 0.9rem;
+    }
+    
+    .info-item {
+        display: flex;
+        margin-bottom: 1.25rem;
+        align-items: flex-start;
+    }
+    
+    .info-icon {
+        margin-right: 1rem;
+        margin-top: 0.25rem;
+        width: 32px;
+        height: 32px;
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .info-content {
+        flex: 1;
+    }
+    
+    .info-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .log-entry {
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .log-entry:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .log-time {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-right: 0.5rem;
+    }
+    
+    .log-type {
+        font-size: 0.8rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 12px;
+        margin-right: 0.5rem;
+    }
+    
+    .log-type.info {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .log-type.warning {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+    
+    .log-type.error {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .log-message {
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho da Seção -->
+    <div class="section-header mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-tools me-2"></i> Manutenção do Banco de Dados</h1>
+                <p class="mb-0">Ferramentas para otimização, reparo e monitoramento do banco de dados.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <div class="btn-group">
+                    <a href="{{ url_for('banco_dados.index') }}" class="btn btn-light">
+                        <i class="fas fa-database me-2"></i> Visão Geral
+                    </a>
+                    <a href="{{ url_for('banco_dados.backup') }}" class="btn btn-light">
+                        <i class="fas fa-download me-2"></i> Backup
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Estatísticas do Banco -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm maintenance-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-chart-bar me-2"></i> Estatísticas do Banco</h5>
+                </div>
+                <div class="card-body">
+                    <div class="db-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Tamanho Total</div>
+                            <div class="stat-value">{{ stats.total_size }}</div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-label">Utilização do Disco</div>
+                            <div class="d-flex justify-content-between">
+                                <div>{{ stats.disk_usage }}%</div>
+                                <div class="text-secondary">{{ stats.used_space }} / {{ stats.total_space }}</div>
+                            </div>
+                            <div class="progress progress-thin">
+                                <div class="progress-bar {{ 'bg-warning' if stats.disk_usage > 70 else 'bg-success' }}" role="progressbar" style="width: {{ stats.disk_usage }}%" aria-valuenow="{{ stats.disk_usage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-label">Total de Registros</div>
+                            <div class="stat-value">{{ stats.total_records }}</div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-label">Tabelas</div>
+                            <div class="stat-value">{{ stats.tables_count }}</div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-label">Conexões Ativas</div>
+                            <div class="stat-value">{{ stats.active_connections }}</div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-label">Última Atualização</div>
+                            <div class="stat-value fs-6">{{ stats.last_update }}</div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-outline-primary w-100" id="refreshStatsBtn">
+                        <i class="fas fa-sync-alt me-2"></i> Atualizar Estatísticas
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Consultas Recentes -->
+            <div class="card shadow-sm maintenance-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-history me-2"></i> Consultas Recentes</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_queries %}
+                        {% for query in recent_queries %}
+                            <div class="query-card">
+                                <div class="query-meta">
+                                    <span>{{ query.timestamp }}</span>
+                                    <span>
+                                        <span class="badge {{ 'bg-danger' if query.duration > 1000 else 'bg-warning' if query.duration > 500 else 'bg-success' }}">
+                                            {{ query.duration }}ms
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="query-text">
+                                    <pre>{{ query.sql }}</pre>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i> Nenhuma consulta recente registrada.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ferramentas de Manutenção -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm maintenance-card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-wrench me-2"></i> Ferramentas de Manutenção</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Otimização -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <div class="task-icon">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                </div>
+                                <div class="task-details">
+                                    <h5 class="task-title">Otimização do Banco de Dados</h5>
+                                    <p class="task-description">Executar VACUUM e ANALYZE para melhorar o desempenho do banco de dados PostgreSQL.</p>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="fullVacuumCheck">
+                                        <label class="form-check-label" for="fullVacuumCheck">
+                                            VACUUM FULL (mais completo, mas bloqueia tabelas)
+                                        </label>
+                                    </div>
+                                    
+                                    <button class="btn btn-primary" id="optimizeBtn">
+                                        <i class="fas fa-play me-2"></i> Iniciar Otimização
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="results-panel d-none" id="optimizeResults">
+                                <div class="text-end mb-2">
+                                    <button class="btn btn-sm btn-outline-secondary" id="clearOptimizeResults">
+                                        Limpar Resultados
+                                    </button>
+                                </div>
+                                <div id="optimizeOutput">
+                                    <!-- Resultado da otimização será exibido aqui -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Verificação de Integridade -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <div class="task-icon warning">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="task-details">
+                                    <h5 class="task-title">Verificação de Integridade</h5>
+                                    <p class="task-description">Verifica a integridade dos dados e detecta possíveis problemas ou inconsistências.</p>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="repairCheck">
+                                        <label class="form-check-label" for="repairCheck">
+                                            Corrigir problemas encontrados automaticamente
+                                        </label>
+                                    </div>
+                                    
+                                    <button class="btn btn-warning" id="integrityBtn">
+                                        <i class="fas fa-play me-2"></i> Verificar Integridade
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="results-panel d-none" id="integrityResults">
+                                <div class="text-end mb-2">
+                                    <button class="btn btn-sm btn-outline-secondary" id="clearIntegrityResults">
+                                        Limpar Resultados
+                                    </button>
+                                </div>
+                                <div id="integrityOutput">
+                                    <!-- Resultado da verificação será exibido aqui -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Manutenção de Índices -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <div class="task-icon success">
+                                    <i class="fas fa-sitemap"></i>
+                                </div>
+                                <div class="task-details">
+                                    <h5 class="task-title">Manutenção de Índices</h5>
+                                    <p class="task-description">Reconstruir índices para melhorar o desempenho de consultas.</p>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="concurrentlyCheck" checked>
+                                        <label class="form-check-label" for="concurrentlyCheck">
+                                            Usar CONCURRENTLY (sem bloqueio, mais lento)
+                                        </label>
+                                    </div>
+                                    
+                                    <button class="btn btn-success" id="indexesBtn">
+                                        <i class="fas fa-play me-2"></i> Reconstruir Índices
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="results-panel d-none" id="indexesResults">
+                                <div class="text-end mb-2">
+                                    <button class="btn btn-sm btn-outline-secondary" id="clearIndexesResults">
+                                        Limpar Resultados
+                                    </button>
+                                </div>
+                                <div id="indexesOutput">
+                                    <!-- Resultado da reconstrução será exibido aqui -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SQL Personalizado -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <div class="task-icon danger">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <div class="task-details">
+                                    <h5 class="task-title">SQL Personalizado</h5>
+                                    <p class="task-description">Execute comandos SQL personalizados para manutenção avançada.</p>
+                                    
+                                    <div class="mb-3">
+                                        <textarea class="form-control" id="customSql" rows="4" placeholder="Digite seu comando SQL aqui..."></textarea>
+                                        <div class="form-text">Utilize com cuidado. Comandos destrutivos podem afetar permanentemente o banco de dados.</div>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="confirmCheck">
+                                        <label class="form-check-label" for="confirmCheck">
+                                            Confirmo que entendo os riscos deste comando
+                                        </label>
+                                    </div>
+                                    
+                                    <button class="btn btn-danger" id="customSqlBtn" disabled>
+                                        <i class="fas fa-play me-2"></i> Executar SQL
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="results-panel d-none" id="sqlResults">
+                                <div class="text-end mb-2">
+                                    <button class="btn btn-sm btn-outline-secondary" id="clearSqlResults">
+                                        Limpar Resultados
+                                    </button>
+                                </div>
+                                <div id="sqlOutput">
+                                    <!-- Resultado do SQL será exibido aqui -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Registro de Atividades -->
+            <div class="card shadow-sm maintenance-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-list-alt me-2"></i> Registro de Manutenções</h5>
+                </div>
+                <div class="card-body">
+                    {% if maintenance_logs %}
+                        <div id="logEntries">
+                            {% for log in maintenance_logs %}
+                                <div class="log-entry">
+                                    <div>
+                                        <span class="log-time">{{ log.timestamp }}</span>
+                                        <span class="log-type {{ log.type }}">{{ log.type }}</span>
+                                        <strong>{{ log.task }}</strong>
+                                    </div>
+                                    <div class="log-message text-muted">{{ log.message }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Nenhum registro de manutenção encontrado.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dicas e Informações -->
+    <div class="card shadow-sm maintenance-card mt-4">
+        <div class="card-header">
+            <h5 class="card-title"><i class="fas fa-lightbulb me-2"></i> Dicas e Informações</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <h5 class="info-title">Otimização Regular</h5>
+                            <p class="info-description">Execute VACUUM e ANALYZE regularmente para manter o desempenho do banco de dados. O VACUUM FULL recupera mais espaço, mas requer bloqueio exclusivo das tabelas.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="info-content">
+                            <h5 class="info-title">Programação Adequada</h5>
+                            <p class="info-description">Programe manutenções maiores para períodos de baixo uso do sistema para minimizar o impacto nas operações regulares.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <h5 class="info-title">Backup Antes de Manutenir</h5>
+                            <p class="info-description">Sempre faça um backup completo antes de realizar operações de manutenção significativas no banco de dados.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="info-content">
+                            <h5 class="info-title">Monitoramento Contínuo</h5>
+                            <p class="info-description">Mantenha um monitoramento constante do crescimento do banco de dados, especialmente em tabelas com muita atividade de inserção e exclusão.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ativar o link de banco de dados no menu
+        const navItems = document.querySelectorAll('.nav-item .nav-link');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const dbLink = document.querySelector('a[href="{{ url_for("banco_dados.index") }}"]');
+        if (dbLink) {
+            dbLink.classList.add('active');
+        }
+        
+        // Funções auxiliares
+        function appendLogEntry(container, type, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-time">${timestamp}</span> 
+                ${message}
+            `;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // Atualizar estatísticas
+        const refreshStatsBtn = document.getElementById('refreshStatsBtn');
+        if (refreshStatsBtn) {
+            refreshStatsBtn.addEventListener('click', function() {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Atualizando...';
+                this.disabled = true;
+                
+                fetch('/banco-dados/estatisticas', {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Atualizar os valores das estatísticas
+                        document.querySelector('.stat-value:nth-of-type(1)').textContent = data.stats.total_size;
+                        
+                        const diskUsageEl = document.querySelector('.d-flex.justify-content-between div:first-child');
+                        const diskSpaceEl = document.querySelector('.d-flex.justify-content-between div:last-child');
+                        const progressBar = document.querySelector('.progress-bar');
+                        
+                        diskUsageEl.textContent = `${data.stats.disk_usage}%`;
+                        diskSpaceEl.textContent = `${data.stats.used_space} / ${data.stats.total_space}`;
+                        progressBar.style.width = `${data.stats.disk_usage}%`;
+                        progressBar.setAttribute('aria-valuenow', data.stats.disk_usage);
+                        
+                        if (data.stats.disk_usage > 70) {
+                            progressBar.className = 'progress-bar bg-warning';
+                        } else {
+                            progressBar.className = 'progress-bar bg-success';
+                        }
+                        
+                        document.querySelector('.stat-value:nth-of-type(3)').textContent = data.stats.total_records;
+                        document.querySelector('.stat-value:nth-of-type(4)').textContent = data.stats.tables_count;
+                        document.querySelector('.stat-value:nth-of-type(5)').textContent = data.stats.active_connections;
+                        document.querySelector('.stat-value:nth-of-type(6)').textContent = data.stats.last_update;
+                        
+                        refreshStatsBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar Estatísticas';
+                        refreshStatsBtn.disabled = false;
+                    } else {
+                        alert('Erro ao atualizar estatísticas: ' + data.message);
+                        refreshStatsBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar Estatísticas';
+                        refreshStatsBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao atualizar estatísticas.');
+                    refreshStatsBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar Estatísticas';
+                    refreshStatsBtn.disabled = false;
+                });
+            });
+        }
+        
+        // Configurar otimização
+        const optimizeBtn = document.getElementById('optimizeBtn');
+        const optimizeResults = document.getElementById('optimizeResults');
+        const optimizeOutput = document.getElementById('optimizeOutput');
+        const fullVacuumCheck = document.getElementById('fullVacuumCheck');
+        
+        if (optimizeBtn) {
+            optimizeBtn.addEventListener('click', function() {
+                optimizeBtn.disabled = true;
+                optimizeBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Otimizando...';
+                
+                optimizeResults.classList.remove('d-none');
+                optimizeOutput.innerHTML = '';
+                
+                appendLogEntry(optimizeOutput, 'info', 'Iniciando otimização do banco de dados...');
+                
+                fetch('/banco-dados/otimizar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        full_vacuum: fullVacuumCheck.checked
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        data.logs.forEach(log => {
+                            appendLogEntry(optimizeOutput, log.type, log.message);
+                        });
+                        
+                        appendLogEntry(optimizeOutput, 'info', '<span class="text-success"><b>Otimização concluída com sucesso!</b></span>');
+                    } else {
+                        appendLogEntry(optimizeOutput, 'error', `<span class="text-danger"><b>Erro:</b> ${data.message}</span>`);
+                    }
+                    
+                    optimizeBtn.innerHTML = '<i class="fas fa-play me-2"></i> Iniciar Otimização';
+                    optimizeBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    appendLogEntry(optimizeOutput, 'error', '<span class="text-danger"><b>Erro ao processar a solicitação.</b></span>');
+                    
+                    optimizeBtn.innerHTML = '<i class="fas fa-play me-2"></i> Iniciar Otimização';
+                    optimizeBtn.disabled = false;
+                });
+            });
+        }
+        
+        // Configurar verificação de integridade
+        const integrityBtn = document.getElementById('integrityBtn');
+        const integrityResults = document.getElementById('integrityResults');
+        const integrityOutput = document.getElementById('integrityOutput');
+        const repairCheck = document.getElementById('repairCheck');
+        
+        if (integrityBtn) {
+            integrityBtn.addEventListener('click', function() {
+                integrityBtn.disabled = true;
+                integrityBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Verificando...';
+                
+                integrityResults.classList.remove('d-none');
+                integrityOutput.innerHTML = '';
+                
+                appendLogEntry(integrityOutput, 'info', 'Iniciando verificação de integridade...');
+                
+                fetch('/banco-dados/verificar-integridade', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        repair: repairCheck.checked
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        data.logs.forEach(log => {
+                            appendLogEntry(integrityOutput, log.type, log.message);
+                        });
+                        
+                        if (data.issues_found === 0) {
+                            appendLogEntry(integrityOutput, 'info', '<span class="text-success"><b>Verificação concluída! Nenhum problema encontrado.</b></span>');
+                        } else if (repairCheck.checked) {
+                            appendLogEntry(integrityOutput, 'info', `<span class="text-success"><b>Verificação concluída! ${data.issues_fixed} problemas corrigidos de ${data.issues_found} encontrados.</b></span>`);
+                        } else {
+                            appendLogEntry(integrityOutput, 'info', `<span class="text-warning"><b>Verificação concluída! ${data.issues_found} problemas encontrados. Ative a opção "Corrigir problemas" para corrigi-los.</b></span>`);
+                        }
+                    } else {
+                        appendLogEntry(integrityOutput, 'error', `<span class="text-danger"><b>Erro:</b> ${data.message}</span>`);
+                    }
+                    
+                    integrityBtn.innerHTML = '<i class="fas fa-play me-2"></i> Verificar Integridade';
+                    integrityBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    appendLogEntry(integrityOutput, 'error', '<span class="text-danger"><b>Erro ao processar a solicitação.</b></span>');
+                    
+                    integrityBtn.innerHTML = '<i class="fas fa-play me-2"></i> Verificar Integridade';
+                    integrityBtn.disabled = false;
+                });
+            });
+        }
+        
+        // Configurar reconstrução de índices
+        const indexesBtn = document.getElementById('indexesBtn');
+        const indexesResults = document.getElementById('indexesResults');
+        const indexesOutput = document.getElementById('indexesOutput');
+        const concurrentlyCheck = document.getElementById('concurrentlyCheck');
+        
+        if (indexesBtn) {
+            indexesBtn.addEventListener('click', function() {
+                indexesBtn.disabled = true;
+                indexesBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Reconstruindo...';
+                
+                indexesResults.classList.remove('d-none');
+                indexesOutput.innerHTML = '';
+                
+                appendLogEntry(indexesOutput, 'info', 'Iniciando reconstrução de índices...');
+                
+                fetch('/banco-dados/reconstruir-indices', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        concurrently: concurrentlyCheck.checked
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        data.logs.forEach(log => {
+                            appendLogEntry(indexesOutput, log.type, log.message);
+                        });
+                        
+                        appendLogEntry(indexesOutput, 'info', `<span class="text-success"><b>Reconstrução concluída! ${data.indexes_rebuilt} índices reconstruídos com sucesso.</b></span>`);
+                    } else {
+                        appendLogEntry(indexesOutput, 'error', `<span class="text-danger"><b>Erro:</b> ${data.message}</span>`);
+                    }
+                    
+                    indexesBtn.innerHTML = '<i class="fas fa-play me-2"></i> Reconstruir Índices';
+                    indexesBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    appendLogEntry(indexesOutput, 'error', '<span class="text-danger"><b>Erro ao processar a solicitação.</b></span>');
+                    
+                    indexesBtn.innerHTML = '<i class="fas fa-play me-2"></i> Reconstruir Índices';
+                    indexesBtn.disabled = false;
+                });
+            });
+        }
+        
+        // Configurar SQL personalizado
+        const customSqlBtn = document.getElementById('customSqlBtn');
+        const sqlResults = document.getElementById('sqlResults');
+        const sqlOutput = document.getElementById('sqlOutput');
+        const customSql = document.getElementById('customSql');
+        const confirmCheck = document.getElementById('confirmCheck');
+        
+        if (confirmCheck) {
+            confirmCheck.addEventListener('change', function() {
+                customSqlBtn.disabled = !this.checked;
+            });
+        }
+        
+        if (customSqlBtn) {
+            customSqlBtn.addEventListener('click', function() {
+                const sql = customSql.value.trim();
+                
+                if (!sql) {
+                    alert('Por favor, digite um comando SQL válido.');
+                    return;
+                }
+                
+                customSqlBtn.disabled = true;
+                customSqlBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Executando...';
+                
+                sqlResults.classList.remove('d-none');
+                sqlOutput.innerHTML = '';
+                
+                appendLogEntry(sqlOutput, 'info', 'Executando SQL personalizado...');
+                appendLogEntry(sqlOutput, 'info', `<pre class="mb-0 mt-2 p-2 bg-dark text-light rounded">${sql}</pre>`);
+                
+                fetch('/banco-dados/executar-sql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        sql: sql
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.result && data.result.length > 0) {
+                            // Criar tabela para exibir resultados
+                            let resultTable = '<div class="table-responsive mt-3"><table class="table table-sm table-bordered">';
+                            
+                            // Cabeçalho
+                            resultTable += '<thead><tr>';
+                            for (const column of data.columns) {
+                                resultTable += `<th>${column}</th>`;
+                            }
+                            resultTable += '</tr></thead>';
+                            
+                            // Corpo
+                            resultTable += '<tbody>';
+                            for (const row of data.result) {
+                                resultTable += '<tr>';
+                                for (const column of data.columns) {
+                                    resultTable += `<td>${row[column] !== null ? row[column] : '<em>null</em>'}</td>`;
+                                }
+                                resultTable += '</tr>';
+                            }
+                            resultTable += '</tbody></table></div>';
+                            
+                            appendLogEntry(sqlOutput, 'info', `<span class="text-success"><b>Consulta executada com sucesso! ${data.result.length} registros retornados.</b></span>`);
+                            appendLogEntry(sqlOutput, 'info', resultTable);
+                        } else {
+                            appendLogEntry(sqlOutput, 'info', `<span class="text-success"><b>Comando executado com sucesso! ${data.affected_rows} linhas afetadas.</b></span>`);
+                        }
+                        
+                        // Limpar campo e checkbox após execução bem-sucedida
+                        customSql.value = '';
+                        confirmCheck.checked = false;
+                        customSqlBtn.disabled = true;
+                    } else {
+                        appendLogEntry(sqlOutput, 'error', `<span class="text-danger"><b>Erro:</b> ${data.message}</span>`);
+                    }
+                    
+                    customSqlBtn.innerHTML = '<i class="fas fa-play me-2"></i> Executar SQL';
+                    customSqlBtn.disabled = !confirmCheck.checked;
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    appendLogEntry(sqlOutput, 'error', '<span class="text-danger"><b>Erro ao processar a solicitação.</b></span>');
+                    
+                    customSqlBtn.innerHTML = '<i class="fas fa-play me-2"></i> Executar SQL';
+                    customSqlBtn.disabled = !confirmCheck.checked;
+                });
+            });
+        }
+        
+        // Configurar botões para limpar resultados
+        document.getElementById('clearOptimizeResults')?.addEventListener('click', function() {
+            optimizeResults.classList.add('d-none');
+            optimizeOutput.innerHTML = '';
+        });
+        
+        document.getElementById('clearIntegrityResults')?.addEventListener('click', function() {
+            integrityResults.classList.add('d-none');
+            integrityOutput.innerHTML = '';
+        });
+        
+        document.getElementById('clearIndexesResults')?.addEventListener('click', function() {
+            indexesResults.classList.add('d-none');
+            indexesOutput.innerHTML = '';
+        });
+        
+        document.getElementById('clearSqlResults')?.addEventListener('click', function() {
+            sqlResults.classList.add('d-none');
+            sqlOutput.innerHTML = '';
+        });
+    });
+</script>
+{% endblock %}

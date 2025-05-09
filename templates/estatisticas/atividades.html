@@ -1,0 +1,755 @@
+{% extends 'base.html' %}
+
+{% block title %}Estatísticas de Atividades - Zelopack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-header {
+        background: linear-gradient(135deg, #6f42c1 0%, #4B0082 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .section-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-header p {
+        opacity: 0.85;
+        max-width: 80%;
+    }
+    
+    .stats-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .stats-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .stats-icon {
+        font-size: 2rem;
+        color: rgba(0, 0, 0, 0.1);
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+    }
+    
+    .chart-container {
+        width: 100%;
+        height: 300px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .activity-item {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        background-color: #f8f9fa;
+        transition: background-color 0.3s ease;
+    }
+    
+    .activity-item:hover {
+        background-color: #e9ecef;
+    }
+    
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    
+    .activity-user {
+        font-weight: 600;
+    }
+    
+    .activity-time {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    
+    .activity-details {
+        color: #495057;
+    }
+    
+    .module-badge {
+        padding: 0.35rem 0.65rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .module-auth {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .module-reports {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .module-documents {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+    
+    .module-calculos {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .module-sistema {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .action-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+    }
+    
+    .action-create {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .action-update {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .action-delete {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .action-login {
+        background-color: rgba(13, 202, 240, 0.1);
+        color: #0dcaf0;
+    }
+    
+    .action-logout {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .action-view {
+        background-color: rgba(253, 126, 20, 0.1);
+        color: #fd7e14;
+    }
+    
+    .filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .filter-item {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .timeline {
+        position: relative;
+        margin: 2rem 0;
+    }
+    
+    .timeline-line {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0.85rem;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-left: 3rem;
+        margin-bottom: 2rem;
+    }
+    
+    .timeline-badge {
+        position: absolute;
+        left: 0;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        border: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        color: #6c757d;
+        z-index: 1;
+    }
+    
+    .timeline-date {
+        position: absolute;
+        top: 0;
+        left: 3rem;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .timeline-content {
+        padding-top: 1.5rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    
+    .map-container {
+        height: 400px;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho da Seção -->
+    <div class="section-header mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-chart-pie me-2"></i> Estatísticas de Atividades</h1>
+                <p class="mb-0">Análise detalhada de atividades e ações realizadas no sistema.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <div class="btn-group">
+                    <a href="{{ url_for('estatisticas.index') }}" class="btn btn-light">
+                        <i class="fas fa-chart-line me-2"></i> Visão Geral
+                    </a>
+                    <a href="{{ url_for('estatisticas.documentos') }}" class="btn btn-light">
+                        <i class="fas fa-file-alt me-2"></i> Documentos
+                    </a>
+                    <a href="{{ url_for('estatisticas.usuarios') }}" class="btn btn-light">
+                        <i class="fas fa-users me-2"></i> Usuários
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Resumo de Atividades -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card shadow-sm stats-card">
+                <div class="card-body">
+                    <i class="fas fa-tasks stats-icon"></i>
+                    <div class="stats-value">{{ activity_stats.total }}</div>
+                    <div class="stats-label">Atividades Totais</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm stats-card">
+                <div class="card-body">
+                    <i class="fas fa-calendar-day stats-icon"></i>
+                    <div class="stats-value">{{ activity_stats.today }}</div>
+                    <div class="stats-label">Atividades Hoje</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm stats-card">
+                <div class="card-body">
+                    <i class="fas fa-user-clock stats-icon"></i>
+                    <div class="stats-value">{{ activity_stats.active_users }}</div>
+                    <div class="stats-label">Usuários Ativos</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm stats-card">
+                <div class="card-body">
+                    <i class="fas fa-bolt stats-icon"></i>
+                    <div class="stats-value">{{ activity_stats.actions_per_hour }}</div>
+                    <div class="stats-label">Ações/Hora</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtros de Atividades -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3"><i class="fas fa-filter me-2"></i> Filtros</h5>
+            <div class="filter-bar">
+                <div class="filter-item">
+                    <label for="start-date" class="form-label">Data Inicial</label>
+                    <input type="date" class="form-control" id="start-date">
+                </div>
+                <div class="filter-item">
+                    <label for="end-date" class="form-label">Data Final</label>
+                    <input type="date" class="form-control" id="end-date">
+                </div>
+                <div class="filter-item">
+                    <label for="user-filter" class="form-label">Usuário</label>
+                    <select class="form-select" id="user-filter">
+                        <option value="">Todos os Usuários</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="module-filter" class="form-label">Módulo</label>
+                    <select class="form-select" id="module-filter">
+                        <option value="">Todos os Módulos</option>
+                        <option value="auth">Autenticação</option>
+                        <option value="reports">Laudos</option>
+                        <option value="documents">Documentos</option>
+                        <option value="calculos">Cálculos</option>
+                        <option value="sistema">Sistema</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="action-filter" class="form-label">Ação</label>
+                    <select class="form-select" id="action-filter">
+                        <option value="">Todas as Ações</option>
+                        <option value="create">Criar</option>
+                        <option value="update">Atualizar</option>
+                        <option value="delete">Excluir</option>
+                        <option value="login">Login</option>
+                        <option value="logout">Logout</option>
+                        <option value="view">Visualizar</option>
+                    </select>
+                </div>
+                <div class="filter-item d-flex align-items-end">
+                    <button class="btn btn-primary w-100" id="apply-filter">
+                        <i class="fas fa-filter me-2"></i> Aplicar Filtro
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Gráficos de Atividades -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title">Atividades por Dia</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="activitiesByDayChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title">Atividades por Módulo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="activitiesByModuleChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title">Tipos de Ações</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="actionTypesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title">Atividades por Hora</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="activitiesByHourChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lista de Atividades Recentes -->
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Atividades Recentes</h5>
+                    <button class="btn btn-sm btn-outline-secondary" id="export-activities">
+                        <i class="fas fa-download me-2"></i> Exportar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-line"></div>
+                        
+                        {% for activity in recent_activities %}
+                            <div class="timeline-item">
+                                <div class="timeline-badge">
+                                    {% if activity.action == 'create' %}
+                                        <i class="fas fa-plus text-success"></i>
+                                    {% elif activity.action == 'update' %}
+                                        <i class="fas fa-edit text-primary"></i>
+                                    {% elif activity.action == 'delete' %}
+                                        <i class="fas fa-trash text-danger"></i>
+                                    {% elif activity.action == 'login' %}
+                                        <i class="fas fa-sign-in-alt text-info"></i>
+                                    {% elif activity.action == 'logout' %}
+                                        <i class="fas fa-sign-out-alt text-secondary"></i>
+                                    {% elif activity.action == 'view' %}
+                                        <i class="fas fa-eye text-warning"></i>
+                                    {% else %}
+                                        <i class="fas fa-cog"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="timeline-date">
+                                    {{ activity.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong>{{ activity.user.name }}</strong>
+                                            
+                                            <span class="action-badge action-{{ activity.action }}">
+                                                {{ activity.action }}
+                                            </span>
+                                            
+                                            <span class="module-badge module-{{ activity.module }}">
+                                                {{ activity.module }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted">IP: {{ activity.ip_address }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="activity-details">
+                                        {{ activity.details }}
+                                        
+                                        {% if activity.entity_type and activity.entity_id %}
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    {{ activity.entity_type }} #{{ activity.entity_id }}
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Paginação -->
+                    <div class="d-flex justify-content-center mt-4">
+                        <nav aria-label="Paginação de atividades">
+                            <ul class="pagination">
+                                {% if current_page > 1 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('estatisticas.atividades', page=current_page-1) }}">Anterior</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Anterior</span>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for p in range(1, total_pages + 1) %}
+                                    <li class="page-item {{ 'active' if p == current_page else '' }}">
+                                        <a class="page-link" href="{{ url_for('estatisticas.atividades', page=p) }}">{{ p }}</a>
+                                    </li>
+                                {% endfor %}
+                                
+                                {% if current_page < total_pages %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('estatisticas.atividades', page=current_page+1) }}">Próxima</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Próxima</span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mapa de Acessos -->
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title">Mapa de Acessos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="map-container" id="access-map"></div>
+                    <div class="text-center text-muted small mt-2">
+                        Distribuição geográfica de acessos baseada nos endereços IP dos usuários.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Incluir Leaflet.js para o mapa -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ativar o link de estatísticas no menu
+        const navItems = document.querySelectorAll('.nav-item .nav-link');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const statsLink = document.querySelector('a[href="{{ url_for("estatisticas.index") }}"]');
+        if (statsLink) {
+            statsLink.classList.add('active');
+        }
+        
+        // Preparar os dados para os gráficos
+        const activitiesByDayData = {
+            labels: {{ activities_by_day.labels|tojson }},
+            datasets: [{
+                label: 'Atividades',
+                data: {{ activities_by_day.values|tojson }},
+                borderColor: '#6f42c1',
+                backgroundColor: 'rgba(111, 66, 193, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        };
+        
+        const activitiesByModuleData = {
+            labels: {{ activities_by_module.labels|tojson }},
+            datasets: [{
+                label: 'Atividades',
+                data: {{ activities_by_module.values|tojson }},
+                backgroundColor: [
+                    'rgba(13, 110, 253, 0.7)',
+                    'rgba(25, 135, 84, 0.7)',
+                    'rgba(255, 193, 7, 0.7)',
+                    'rgba(220, 53, 69, 0.7)',
+                    'rgba(108, 117, 125, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        };
+        
+        const actionTypesData = {
+            labels: ['Criar', 'Atualizar', 'Excluir', 'Login', 'Logout', 'Visualizar', 'Outros'],
+            datasets: [{
+                label: 'Ações',
+                data: {{ action_types|tojson }},
+                backgroundColor: [
+                    'rgba(25, 135, 84, 0.7)',
+                    'rgba(13, 110, 253, 0.7)',
+                    'rgba(220, 53, 69, 0.7)',
+                    'rgba(13, 202, 240, 0.7)',
+                    'rgba(108, 117, 125, 0.7)',
+                    'rgba(255, 193, 7, 0.7)',
+                    'rgba(111, 66, 193, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        };
+        
+        const activitiesByHourData = {
+            labels: Array.from(Array(24).keys()).map(hour => `${hour}:00`),
+            datasets: [{
+                label: 'Atividades',
+                data: {{ activities_by_hour|tojson }},
+                backgroundColor: 'rgba(111, 66, 193, 0.7)',
+                borderColor: 'rgba(111, 66, 193, 1)',
+                borderWidth: 1
+            }]
+        };
+        
+        // Configurações comuns para gráficos
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        };
+        
+        // Criar gráficos
+        new Chart(document.getElementById('activitiesByDayChart'), {
+            type: 'line',
+            data: activitiesByDayData,
+            options: {
+                ...commonOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        new Chart(document.getElementById('activitiesByModuleChart'), {
+            type: 'doughnut',
+            data: activitiesByModuleData,
+            options: commonOptions
+        });
+        
+        new Chart(document.getElementById('actionTypesChart'), {
+            type: 'pie',
+            data: actionTypesData,
+            options: commonOptions
+        });
+        
+        new Chart(document.getElementById('activitiesByHourChart'), {
+            type: 'bar',
+            data: activitiesByHourData,
+            options: {
+                ...commonOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Configurar filtros
+        const now = new Date();
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        
+        document.getElementById('end-date').valueAsDate = now;
+        document.getElementById('start-date').valueAsDate = oneMonthAgo;
+        
+        // Aplicar filtro
+        document.getElementById('apply-filter').addEventListener('click', function() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            const userId = document.getElementById('user-filter').value;
+            const module = document.getElementById('module-filter').value;
+            const action = document.getElementById('action-filter').value;
+            
+            // Atualizar URL com os parâmetros de filtro
+            const url = new URL(window.location.href);
+            url.searchParams.set('start_date', startDate);
+            url.searchParams.set('end_date', endDate);
+            
+            if (userId) url.searchParams.set('user_id', userId);
+            else url.searchParams.delete('user_id');
+            
+            if (module) url.searchParams.set('module', module);
+            else url.searchParams.delete('module');
+            
+            if (action) url.searchParams.set('action', action);
+            else url.searchParams.delete('action');
+            
+            // Redirecionar para a URL com filtros
+            window.location.href = url.toString();
+        });
+        
+        // Exportar atividades
+        document.getElementById('export-activities').addEventListener('click', function() {
+            // Implementar exportação do log em CSV ou Excel
+            // Aqui apenas uma simulação
+            alert('Exportação iniciada. O arquivo será baixado em instantes.');
+            
+            // Criar e baixar um arquivo CSV
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // Adicionar cabeçalho
+            const headers = ["Data/Hora", "Usuário", "Ação", "Módulo", "Detalhes", "IP"];
+            csvContent += headers.join(",") + "\n";
+            
+            // Adicionar linhas das atividades da timeline
+            document.querySelectorAll('.timeline-item').forEach(item => {
+                const date = item.querySelector('.timeline-date').textContent.trim();
+                const user = item.querySelector('.timeline-content strong').textContent.trim();
+                const action = item.querySelector('.action-badge').textContent.trim();
+                const module = item.querySelector('.module-badge').textContent.trim();
+                const details = item.querySelector('.activity-details').childNodes[0].textContent.trim();
+                const ip = item.querySelector('small.text-muted').textContent.replace('IP:', '').trim();
+                
+                // Formatar os dados para CSV
+                const rowData = [
+                    `"${date}"`,
+                    `"${user}"`,
+                    `"${action}"`,
+                    `"${module}"`,
+                    `"${details.replace(/"/g, '""')}"`,
+                    `"${ip}"`
+                ];
+                
+                csvContent += rowData.join(",") + "\n";
+            });
+            
+            // Criar link de download
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "atividades_sistema.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+        
+        // Inicializar mapa de acessos
+        const map = L.map('access-map').setView([-23.550520, -46.633308], 4); // São Paulo, BR como centro
+        
+        // Adicionar camada do mapa
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Adicionar marcadores para os acessos
+        const accessLocations = {{ access_locations|tojson }};
+        
+        accessLocations.forEach(location => {
+            const marker = L.marker([location.lat, location.lng]).addTo(map);
+            
+            marker.bindPopup(`
+                <strong>${location.city}, ${location.country}</strong><br>
+                ${location.count} acessos<br>
+                <small class="text-muted">IP: ${location.ip}</small>
+            `);
+        });
+    });
+</script>
+{% endblock %}

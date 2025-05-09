@@ -1,0 +1,910 @@
+{% extends 'base.html' %}
+
+{% block title %}Estatísticas de Usuários - Zelopack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-header {
+        background: linear-gradient(135deg, #6f42c1 0%, #4B0082 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .section-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-header p {
+        opacity: 0.85;
+        max-width: 80%;
+    }
+    
+    .stats-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .stats-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .stats-icon {
+        font-size: 2rem;
+        color: rgba(0, 0, 0, 0.1);
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+    }
+    
+    .chart-container {
+        width: 100%;
+        height: 300px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .activity-item {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        background-color: #f8f9fa;
+        transition: background-color 0.3s ease;
+    }
+    
+    .activity-item:hover {
+        background-color: #e9ecef;
+    }
+    
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    
+    .activity-user {
+        font-weight: 600;
+    }
+    
+    .activity-time {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    
+    .activity-details {
+        color: #495057;
+    }
+    
+    .role-badge {
+        padding: 0.35rem 0.65rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .role-admin {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .role-gestor {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .role-usuario {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: #6c757d;
+        margin-right: 1rem;
+    }
+    
+    .user-row {
+        display: flex;
+        align-items: center;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        display: block;
+    }
+    
+    .user-email {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .filter-item {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .nav-tabs .nav-link {
+        border: none;
+        border-radius: 0;
+        padding: 0.75rem 1.25rem;
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #6f42c1;
+        background-color: transparent;
+        border-bottom: 2px solid #6f42c1;
+    }
+    
+    .nav-tabs .nav-link:hover:not(.active) {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .tab-content {
+        padding-top: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho da Seção -->
+    <div class="section-header mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-users me-2"></i> Estatísticas de Usuários</h1>
+                <p class="mb-0">Análise de uso, engajamento e atividades dos usuários no sistema.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <div class="btn-group">
+                    <a href="{{ url_for('estatisticas.index') }}" class="btn btn-light">
+                        <i class="fas fa-chart-line me-2"></i> Visão Geral
+                    </a>
+                    <a href="{{ url_for('estatisticas.documentos') }}" class="btn btn-light">
+                        <i class="fas fa-file-alt me-2"></i> Documentos
+                    </a>
+                    <a href="{{ url_for('estatisticas.atividades') }}" class="btn btn-light">
+                        <i class="fas fa-history me-2"></i> Atividades
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Resumo de Usuários -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card shadow-sm stats-card">
+                <div class="card-body">
+                    <i class="fas fa-users stats-icon"></i>
+                    <div class="stats-value">{{ user_stats.total_users }}</div>
+                    <div class="stats-label">Usuários Totais</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm stats-card">
+                <div class="card-body">
+                    <i class="fas fa-user-shield stats-icon"></i>
+                    <div class="stats-value">{{ user_stats.admins }}</div>
+                    <div class="stats-label">Administradores</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm stats-card">
+                <div class="card-body">
+                    <i class="fas fa-user-tie stats-icon"></i>
+                    <div class="stats-value">{{ user_stats.managers }}</div>
+                    <div class="stats-label">Gestores</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm stats-card">
+                <div class="card-body">
+                    <i class="fas fa-user-check stats-icon"></i>
+                    <div class="stats-value">{{ user_stats.active_users }}</div>
+                    <div class="stats-label">Usuários Ativos</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Guias de Estatísticas -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link active" id="overview-tab" data-bs-toggle="tab" href="#overview">Visão Geral</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="engagement-tab" data-bs-toggle="tab" href="#engagement">Engajamento</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="departments-tab" data-bs-toggle="tab" href="#departments">Departamentos</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="access-tab" data-bs-toggle="tab" href="#access">Acessos</a>
+        </li>
+    </ul>
+    
+    <!-- Conteúdo das Guias -->
+    <div class="tab-content">
+        <!-- Visão Geral -->
+        <div class="tab-pane fade show active" id="overview">
+            <div class="row">
+                <!-- Usuários por Papel -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title">Distribuição por Papel</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="userRolesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Crescimento de Usuários -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title">Crescimento de Usuários</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="userGrowthChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lista de Usuários Mais Ativos -->
+                <div class="col-lg-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title">Usuários Mais Ativos</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Usuário</th>
+                                            <th>Papel</th>
+                                            <th>Departamento</th>
+                                            <th>Último Acesso</th>
+                                            <th>Atividades</th>
+                                            <th>Tempo Médio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for user in most_active_users %}
+                                            <tr>
+                                                <td>
+                                                    <div class="user-row">
+                                                        <div class="user-avatar">
+                                                            {{ user.name|first }}{{ user.name.split()[1]|first if user.name.split()|length > 1 else "" }}
+                                                        </div>
+                                                        <div>
+                                                            <span class="user-name">{{ user.name }}</span>
+                                                            <span class="user-email">{{ user.email }}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="role-badge role-{{ user.role }}">{{ user.role }}</span>
+                                                </td>
+                                                <td>{{ user.department }}</td>
+                                                <td>{{ user.last_login }}</td>
+                                                <td>{{ user.activity_count }}</td>
+                                                <td>{{ user.avg_time_spent }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Engajamento -->
+        <div class="tab-pane fade" id="engagement">
+            <div class="row">
+                <!-- Métricas de Engajamento -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title">Métricas de Engajamento</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div>
+                                    <h6 class="mb-0">Acesso Diário Médio</h6>
+                                    <p class="text-muted small mb-0">Usuários únicos por dia</p>
+                                </div>
+                                <div class="h3 mb-0">{{ engagement_stats.daily_average }}</div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div>
+                                    <h6 class="mb-0">Taxa de Retenção</h6>
+                                    <p class="text-muted small mb-0">Retorno em 7 dias</p>
+                                </div>
+                                <div class="h3 mb-0">{{ engagement_stats.retention_rate }}%</div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div>
+                                    <h6 class="mb-0">Tempo Médio por Sessão</h6>
+                                    <p class="text-muted small mb-0">Duração média</p>
+                                </div>
+                                <div class="h3 mb-0">{{ engagement_stats.avg_session_time }}</div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">Ações por Sessão</h6>
+                                    <p class="text-muted small mb-0">Média de interações</p>
+                                </div>
+                                <div class="h3 mb-0">{{ engagement_stats.actions_per_session }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Módulos Mais Acessados -->
+                <div class="col-lg-8 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title">Módulos Mais Acessados</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="modulesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Frequência de Uso -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title">Frequência de Uso</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="usageFrequencyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Horários de Acesso -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title">Horários de Acesso</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="accessTimeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Departamentos -->
+        <div class="tab-pane fade" id="departments">
+            <div class="row">
+                <!-- Usuários por Departamento -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title">Usuários por Departamento</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="departmentsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Atividade por Departamento -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title">Atividade por Departamento</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="departmentActivityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tabela de Departamentos -->
+                <div class="col-lg-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title">Detalhes por Departamento</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Departamento</th>
+                                            <th>Usuários</th>
+                                            <th>Ativos</th>
+                                            <th>Atividades</th>
+                                            <th>Documentos</th>
+                                            <th>Tempo Médio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for dept in departments %}
+                                            <tr>
+                                                <td><strong>{{ dept.name }}</strong></td>
+                                                <td>{{ dept.user_count }}</td>
+                                                <td>{{ dept.active_users }}</td>
+                                                <td>{{ dept.activities }}</td>
+                                                <td>{{ dept.documents }}</td>
+                                                <td>{{ dept.avg_time }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Acessos -->
+        <div class="tab-pane fade" id="access">
+            <div class="row">
+                <!-- Filtro de Período -->
+                <div class="col-lg-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="filter-bar">
+                                <div class="filter-item">
+                                    <label for="start-date" class="form-label">Data Inicial</label>
+                                    <input type="date" class="form-control" id="start-date">
+                                </div>
+                                <div class="filter-item">
+                                    <label for="end-date" class="form-label">Data Final</label>
+                                    <input type="date" class="form-control" id="end-date">
+                                </div>
+                                <div class="filter-item">
+                                    <label for="user-filter" class="form-label">Usuário</label>
+                                    <select class="form-select" id="user-filter">
+                                        <option value="">Todos os Usuários</option>
+                                        {% for user in all_users %}
+                                            <option value="{{ user.id }}">{{ user.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="filter-item d-flex align-items-end">
+                                    <button class="btn btn-primary w-100" id="apply-filter">
+                                        <i class="fas fa-filter me-2"></i> Aplicar Filtro
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gráfico de Acessos -->
+                <div class="col-lg-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title">Histórico de Acessos</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="height: 400px;">
+                                <canvas id="accessHistoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Log de Acessos -->
+                <div class="col-lg-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Log de Acessos</h5>
+                            <button class="btn btn-sm btn-outline-secondary" id="export-log">
+                                <i class="fas fa-download me-2"></i> Exportar
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped" id="access-log-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Data/Hora</th>
+                                            <th>Usuário</th>
+                                            <th>Ação</th>
+                                            <th>IP</th>
+                                            <th>Dispositivo</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for log in access_logs %}
+                                            <tr>
+                                                <td>{{ log.timestamp }}</td>
+                                                <td>{{ log.user_name }}</td>
+                                                <td>{{ log.action }}</td>
+                                                <td>{{ log.ip_address }}</td>
+                                                <td>{{ log.device }}</td>
+                                                <td>
+                                                    {% if log.status == 'success' %}
+                                                        <span class="badge bg-success">Sucesso</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger">Falha</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ativar o link de estatísticas no menu
+        const navItems = document.querySelectorAll('.nav-item .nav-link');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const statsLink = document.querySelector('a[href="{{ url_for("estatisticas.index") }}"]');
+        if (statsLink) {
+            statsLink.classList.add('active');
+        }
+        
+        // Preparar os dados para os gráficos
+        const userRolesData = {
+            labels: ['Administradores', 'Gestores', 'Usuários'],
+            datasets: [{
+                data: [
+                    {{ user_stats.admins }},
+                    {{ user_stats.managers }},
+                    {{ user_stats.regular_users }}
+                ],
+                backgroundColor: ['#0d6efd', '#198754', '#6c757d'],
+                borderWidth: 1
+            }]
+        };
+        
+        const userGrowthData = {
+            labels: {{ growth_data.labels|tojson }},
+            datasets: [{
+                label: 'Novos Usuários',
+                data: {{ growth_data.values|tojson }},
+                borderColor: '#6f42c1',
+                backgroundColor: 'rgba(111, 66, 193, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        };
+        
+        const modulesData = {
+            labels: {{ module_usage.labels|tojson }},
+            datasets: [{
+                label: 'Acessos',
+                data: {{ module_usage.values|tojson }},
+                backgroundColor: 'rgba(111, 66, 193, 0.7)',
+                borderColor: 'rgba(111, 66, 193, 1)',
+                borderWidth: 1
+            }]
+        };
+        
+        const usageFrequencyData = {
+            labels: ['Diário', 'Semanal', 'Mensal', 'Ocasional'],
+            datasets: [{
+                label: 'Usuários',
+                data: {{ usage_frequency|tojson }},
+                backgroundColor: [
+                    'rgba(13, 110, 253, 0.7)', 
+                    'rgba(25, 135, 84, 0.7)', 
+                    'rgba(255, 193, 7, 0.7)', 
+                    'rgba(108, 117, 125, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(13, 110, 253, 1)', 
+                    'rgba(25, 135, 84, 1)', 
+                    'rgba(255, 193, 7, 1)', 
+                    'rgba(108, 117, 125, 1)'
+                ],
+                borderWidth: 1
+            }]
+        };
+        
+        const accessTimeData = {
+            labels: ['00-04', '04-08', '08-12', '12-16', '16-20', '20-24'],
+            datasets: [{
+                label: 'Acessos',
+                data: {{ access_times|tojson }},
+                backgroundColor: 'rgba(111, 66, 193, 0.7)',
+                borderColor: 'rgba(111, 66, 193, 1)',
+                borderWidth: 1
+            }]
+        };
+        
+        const departmentsData = {
+            labels: {{ departments_data.labels|tojson }},
+            datasets: [{
+                data: {{ departments_data.values|tojson }},
+                backgroundColor: [
+                    'rgba(13, 110, 253, 0.7)',
+                    'rgba(25, 135, 84, 0.7)',
+                    'rgba(255, 193, 7, 0.7)',
+                    'rgba(220, 53, 69, 0.7)',
+                    'rgba(108, 117, 125, 0.7)',
+                    'rgba(13, 202, 240, 0.7)',
+                    'rgba(111, 66, 193, 0.7)',
+                    'rgba(253, 126, 20, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        };
+        
+        const departmentActivityData = {
+            labels: {{ departments_data.labels|tojson }},
+            datasets: [{
+                label: 'Atividades',
+                data: {{ department_activity|tojson }},
+                backgroundColor: 'rgba(111, 66, 193, 0.7)',
+                borderColor: 'rgba(111, 66, 193, 1)',
+                borderWidth: 1
+            }]
+        };
+        
+        const accessHistoryData = {
+            labels: {{ access_history.labels|tojson }},
+            datasets: [
+                {
+                    label: 'Logins',
+                    data: {{ access_history.logins|tojson }},
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Usuários Ativos',
+                    data: {{ access_history.active_users|tojson }},
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        };
+        
+        // Configurações comuns para gráficos
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        };
+        
+        // Criar gráficos
+        new Chart(document.getElementById('userRolesChart'), {
+            type: 'pie',
+            data: userRolesData,
+            options: {
+                ...commonOptions,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+        
+        new Chart(document.getElementById('userGrowthChart'), {
+            type: 'line',
+            data: userGrowthData,
+            options: {
+                ...commonOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        new Chart(document.getElementById('modulesChart'), {
+            type: 'bar',
+            data: modulesData,
+            options: {
+                ...commonOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        new Chart(document.getElementById('usageFrequencyChart'), {
+            type: 'pie',
+            data: usageFrequencyData,
+            options: commonOptions
+        });
+        
+        new Chart(document.getElementById('accessTimeChart'), {
+            type: 'bar',
+            data: accessTimeData,
+            options: {
+                ...commonOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        new Chart(document.getElementById('departmentsChart'), {
+            type: 'doughnut',
+            data: departmentsData,
+            options: {
+                ...commonOptions,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+        
+        new Chart(document.getElementById('departmentActivityChart'), {
+            type: 'bar',
+            data: departmentActivityData,
+            options: {
+                ...commonOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        new Chart(document.getElementById('accessHistoryChart'), {
+            type: 'line',
+            data: accessHistoryData,
+            options: {
+                ...commonOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Configurar filtros
+        const now = new Date();
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        
+        document.getElementById('end-date').valueAsDate = now;
+        document.getElementById('start-date').valueAsDate = oneMonthAgo;
+        
+        // Aplicar filtro
+        document.getElementById('apply-filter').addEventListener('click', function() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            const userId = document.getElementById('user-filter').value;
+            
+            // Atualizar URL com os parâmetros de filtro
+            const url = new URL(window.location.href);
+            url.searchParams.set('start_date', startDate);
+            url.searchParams.set('end_date', endDate);
+            if (userId) {
+                url.searchParams.set('user_id', userId);
+            } else {
+                url.searchParams.delete('user_id');
+            }
+            
+            // Redirecionar para a URL com filtros
+            window.location.href = url.toString();
+        });
+        
+        // Exportar log
+        document.getElementById('export-log').addEventListener('click', function() {
+            // Implementar exportação do log em CSV ou Excel
+            // Aqui apenas uma simulação
+            alert('Exportação de log iniciada. O arquivo será baixado em instantes.');
+            
+            // Criar e baixar um arquivo CSV
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // Adicionar cabeçalho
+            const headers = ["Data/Hora", "Usuário", "Ação", "IP", "Dispositivo", "Status"];
+            csvContent += headers.join(",") + "\n";
+            
+            // Adicionar linhas
+            const rows = document.querySelectorAll('#access-log-table tbody tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const rowData = Array.from(cells).map(cell => {
+                    // Remover vírgulas e aspas para não quebrar o CSV
+                    return '"' + cell.textContent.replace(/"/g, '""').trim() + '"';
+                });
+                csvContent += rowData.join(",") + "\n";
+            });
+            
+            // Criar link de download
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "log_acessos.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    });
+</script>
+{% endblock %}
