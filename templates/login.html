@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if reset_password %}
+    Redefinir Senha - Zelopack
+  {% elif register %}
+    Criar Conta - Zelopack
+  {% else %}
+    Login - Zelopack
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="auth-form">
+    <div class="text-center mb-4">
+      <h2 class="fw-bold">
+        {% if reset_password %}
+          Redefinir Senha
+        {% elif register %}
+          Criar Conta
+        {% else %}
+          Acesse sua Conta
+        {% endif %}
+      </h2>
+      <p class="text-muted">
+        {% if reset_password %}
+          Digite seu email para receber instruções de redefinição de senha
+        {% elif register %}
+          Preencha os dados abaixo para criar sua conta
+        {% else %}
+          Entre com suas credenciais para acessar o sistema
+        {% endif %}
+      </p>
+    </div>
+
+    <form method="post" class="needs-validation" novalidate>
+      {% if register %}
+        <div class="mb-3">
+          <label for="name" class="form-label">Nome completo</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            <input type="text" class="form-control" id="name" name="name" required>
+          </div>
+          <div class="invalid-feedback">Por favor, informe seu nome.</div>
+        </div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+          <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="invalid-feedback">Por favor, informe um email válido.</div>
+      </div>
+
+      {% if not reset_password %}
+        <div class="mb-3">
+          <label for="password" class="form-label">Senha</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control" id="password" name="password" required>
+            <span class="input-group-text toggle-password" data-target="#password">
+              <i class="bi bi-eye-slash"></i>
+            </span>
+          </div>
+          <div class="invalid-feedback">Por favor, informe sua senha.</div>
+        </div>
+      {% endif %}
+
+      <div class="d-grid gap-2 mt-4">
+        <button type="submit" class="btn btn-main">
+          {% if reset_password %}
+            Enviar Email de Redefinição
+          {% elif register %}
+            Criar Conta
+          {% else %}
+            Entrar
+          {% endif %}
+        </button>
+      </div>
+      
+      <!-- Additional links -->
+      <div class="mt-3 text-center">
+        {% if reset_password %}
+          <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Voltar para Login</a>
+        {% elif register %}
+          <p>Já possui uma conta? <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Faça login</a></p>
+        {% else %}
+          <div class="d-flex justify-content-between">
+            <a href="{{ url_for('auth.reset_password') }}" class="text-decoration-none">Esqueceu a senha?</a>
+            <a href="{{ url_for('auth.register') }}" class="text-decoration-none">Criar uma conta</a>
+          </div>
+        {% endif %}
+      </div>
+    </form>
+
+    <div class="text-center mt-4">
+      <p class="text-muted">Ou acesse com</p>
+      <button type="button" class="btn btn-outline-light" id="googleSignIn">
+        <i class="bi bi-google me-2"></i> Google
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Firebase initialization and auth -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
+  import { 
+    getAuth, 
+    signInWithPopup, 
+    GoogleAuthProvider,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    sendPasswordResetEmail
+  } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
+
+  const firebaseConfig = {
+    apiKey: "{{ firebase_api_key }}",
+    authDomain: "{{ firebase_project_id }}.firebaseapp.com",
+    projectId: "{{ firebase_project_id }}",
+    storageBucket: "{{ firebase_project_id }}.appspot.com",
+    appId: "{{ firebase_app_id }}",
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth();
+  const provider = new GoogleAuthProvider();
+
+  // Google Sign In
+  document.getElementById('googleSignIn').addEventListener('click', function() {
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        // Get the user's ID token
+        const user = result.user;
+        const idToken = user.accessToken;
+        
+        // Send the token to your backend
+        window.location.href = `/auth/verify-firebase-token?token=${idToken}`;
+      })
+      .catch((error) => {
+        console.error("Google sign in error:", error);
+        alert("Erro ao fazer login com Google: " + error.message);
+      });
+  });
+
+  // Form validation
+  const forms = document.querySelectorAll('.needs-validation');
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    }, false);
+  });
+
+  // Toggle password visibility
+  const togglePassword = document.querySelector('.toggle-password');
+  if (togglePassword) {
+    togglePassword.addEventListener('click', function() {
+      const passwordInput = document.querySelector(this.getAttribute('data-target'));
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      this.querySelector('i').classList.toggle('bi-eye');
+      this.querySelector('i').classList.toggle('bi-eye-slash');
+    });
+  }
+</script>
+{% endblock %}

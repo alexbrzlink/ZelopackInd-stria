@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Recurso - Zelopack{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Editar Recurso</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('resources.edit', resource_id=resource.id) }}" class="needs-validation" novalidate>
+                        <div class="row g-3">
+                            <!-- Name -->
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Nome do Recurso <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ resource.name }}" required>
+                                <div class="invalid-feedback">
+                                    Por favor, informe o nome do recurso.
+                                </div>
+                            </div>
+                            
+                            <!-- Category -->
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">Categoria <span class="text-danger">*</span></label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="" disabled>Selecione uma categoria</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category }}" {% if category == resource.category %}selected{% endif %}>{{ category }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">
+                                    Por favor, selecione uma categoria.
+                                </div>
+                            </div>
+                            
+                            <!-- Location -->
+                            <div class="col-md-6">
+                                <label for="location" class="form-label">Localização <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="location" name="location" value="{{ resource.location }}" required>
+                                <div class="invalid-feedback">
+                                    Por favor, informe a localização do recurso.
+                                </div>
+                            </div>
+                            
+                            <!-- Status -->
+                            <div class="col-md-6">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    {% for status in status_options %}
+                                    <option value="{{ status }}" {% if status == resource.status %}selected{% endif %}>{{ status }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Quantity -->
+                            <div class="col-md-6">
+                                <label for="quantity" class="form-label">Quantidade</label>
+                                <input type="number" class="form-control" id="quantity" name="quantity" value="{{ resource.quantity }}" min="1">
+                            </div>
+                            
+                            <!-- Last Maintenance -->
+                            <div class="col-md-6">
+                                <label for="last_maintenance" class="form-label">Última Manutenção</label>
+                                <input type="date" class="form-control" id="last_maintenance" name="last_maintenance" value="{{ resource.last_maintenance }}">
+                            </div>
+                            
+                            <!-- Next Maintenance -->
+                            <div class="col-md-6">
+                                <label for="next_maintenance" class="form-label">Próxima Manutenção</label>
+                                <input type="date" class="form-control" id="next_maintenance" name="next_maintenance" value="{{ resource.next_maintenance }}">
+                            </div>
+                            
+                            <!-- Description -->
+                            <div class="col-12">
+                                <label for="description" class="form-label">Descrição</label>
+                                <textarea class="form-control" id="description" name="description" rows="4">{{ resource.description }}</textarea>
+                            </div>
+                            
+                            <div class="col-12 mt-4">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('resources.details', resource_id=resource.id) }}" class="btn btn-secondary">Cancelar</a>
+                                    <button type="submit" class="btn btn-main">Salvar Alterações</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+    
+    // Auto calculate next maintenance based on last maintenance
+    const lastMaintenanceInput = document.getElementById('last_maintenance');
+    const nextMaintenanceInput = document.getElementById('next_maintenance');
+    
+    if (lastMaintenanceInput && nextMaintenanceInput) {
+        lastMaintenanceInput.addEventListener('change', function() {
+            if (this.value && !nextMaintenanceInput.value) {
+                // Set next maintenance to 6 months after last maintenance
+                const lastDate = new Date(this.value);
+                const nextDate = new Date(lastDate);
+                nextDate.setMonth(nextDate.getMonth() + 6);
+                
+                // Format date as YYYY-MM-DD
+                const nextDateFormatted = nextDate.toISOString().split('T')[0];
+                nextMaintenanceInput.value = nextDateFormatted;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

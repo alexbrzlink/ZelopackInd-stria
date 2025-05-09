@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Zelopack Gerenciamento de Recursos - Início{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row align-items-center py-5">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-4">Gerencie os recursos da sua empresa de forma eficiente</h1>
+            <p class="lead mb-4">O sistema completo para gerenciar equipamentos, espaços e outros recursos do ambiente de trabalho da Zelopack.</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-main btn-lg px-4 me-md-2">Começar Agora</a>
+                <a href="#recursos" class="btn btn-outline-secondary btn-lg px-4">Saiba Mais</a>
+            </div>
+        </div>
+        <div class="col-lg-6 d-none d-lg-block">
+            <div class="text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clipboard">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    <path d="M12 11v6"></path>
+                    <path d="M9 14h6"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-dark py-5" id="recursos">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Principais Recursos</h2>
+            <p class="lead">Conheça as principais funcionalidades do nosso sistema</p>
+        </div>
+        
+        <div class="row g-4 py-3">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-tools text-primary" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <h4 class="card-title">Gestão de Recursos</h4>
+                        <p class="card-text">Cadastre, monitore e gerencie todos os recursos da empresa em um só lugar.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-people text-success" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <h4 class="card-title">Controle de Usuários</h4>
+                        <p class="card-text">Defina diferentes níveis de acesso e permissões para cada tipo de usuário.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-graph-up text-warning" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <h4 class="card-title">Relatórios e Estatísticas</h4>
+                        <p class="card-text">Visualize dados importantes sobre a utilização dos recursos em tempo real.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row align-items-center">
+        <div class="col-lg-6 order-lg-2 mb-4 mb-lg-0">
+            <h2 class="fw-bold mb-3">Otimize a gestão de recursos da sua empresa</h2>
+            <p>Nosso sistema oferece uma solução completa para o gerenciamento de todos os recursos da Zelopack:</p>
+            <ul class="list-group list-group-flush mb-4">
+                <li class="list-group-item"><i class="bi bi-check-circle-fill text-primary me-2"></i> Controle de estoque e inventário</li>
+                <li class="list-group-item"><i class="bi bi-check-circle-fill text-primary me-2"></i> Agendamento de manutenções</li>
+                <li class="list-group-item"><i class="bi bi-check-circle-fill text-primary me-2"></i> Atribuição de recursos aos usuários</li>
+                <li class="list-group-item"><i class="bi bi-check-circle-fill text-primary me-2"></i> Gestão de espaços físicos</li>
+                <li class="list-group-item"><i class="bi bi-check-circle-fill text-primary me-2"></i> Controle de acesso por níveis</li>
+            </ul>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-main">Acessar Sistema</a>
+        </div>
+        <div class="col-lg-6 order-lg-1">
+            <div class="text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-layers">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Firebase initialization -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
+
+  const firebaseConfig = {
+    apiKey: "{{ firebase_api_key }}",
+    authDomain: "{{ firebase_project_id }}.firebaseapp.com",
+    projectId: "{{ firebase_project_id }}",
+    storageBucket: "{{ firebase_project_id }}.appspot.com",
+    appId: "{{ firebase_app_id }}",
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+</script>
+{% endblock %}
