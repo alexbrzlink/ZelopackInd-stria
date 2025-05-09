@@ -1,0 +1,756 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if user %}Editar Usuário{% else %}Novo Usuário{% endif %} - Zelopack
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-header {
+        background: linear-gradient(135deg, #3f51b5 0%, #303f9f 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .section-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-header p {
+        opacity: 0.85;
+        max-width: 80%;
+    }
+    
+    .user-form-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .user-form-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .user-form-card .card-header {
+        background-color: #f8f9fa;
+        border-bottom: none;
+        padding: 1.25rem;
+    }
+    
+    .user-form-card .card-title {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .user-form-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .permission-section {
+        margin-top: 1.5rem;
+    }
+    
+    .permission-header {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .permission-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .permission-group-title {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+    
+    .permission-checks {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.5rem 1rem;
+    }
+    
+    .role-option {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: border-color 0.3s ease, background-color 0.3s ease;
+    }
+    
+    .role-option:hover {
+        border-color: #adb5bd;
+        background-color: #f8f9fa;
+    }
+    
+    .role-option.selected {
+        border-color: #3f51b5;
+        background-color: rgba(63, 81, 181, 0.05);
+    }
+    
+    .role-icon {
+        width: 50px;
+        height: 50px;
+        background-color: rgba(63, 81, 181, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.5rem;
+        color: #3f51b5;
+    }
+    
+    .role-content {
+        flex: 1;
+    }
+    
+    .role-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .role-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 1.5rem;
+        position: relative;
+    }
+    
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .profile-avatar .avatar-upload {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: #3f51b5;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease;
+    }
+    
+    .profile-avatar .avatar-upload:hover {
+        background-color: #303f9f;
+    }
+    
+    .profile-avatar input[type="file"] {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho da Seção -->
+    <div class="section-header mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-user{% if not user %}-plus{% endif %} me-2"></i> {% if user %}Editar Usuário{% else %}Novo Usuário{% endif %}</h1>
+                <p class="mb-0">{% if user %}Atualize as informações do usuário existente.{% else %}Crie um novo usuário no sistema.{% endif %}</p>
+            </div>
+            <div class="d-none d-md-block">
+                <div class="btn-group">
+                    <a href="{{ url_for('auth.usuarios') }}" class="btn btn-light">
+                        <i class="fas fa-users me-2"></i> Todos os Usuários
+                    </a>
+                    {% if current_user.is_admin %}
+                        <a href="{{ url_for('auth.admin_security') }}" class="btn btn-light">
+                            <i class="fas fa-shield-alt me-2"></i> Segurança
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Formulário Principal -->
+            <div class="card shadow-sm user-form-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-info-circle me-2"></i> Informações do Usuário</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% if user %}{{ url_for('auth.editar_usuario', user_id=user.id) }}{% else %}{{ url_for('auth.criar_usuario') }}{% endif %}" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="username" class="form-label">Nome de Usuário*</label>
+                                <input type="text" class="form-control{% if form.username.errors %} is-invalid{% endif %}" id="username" name="username" value="{{ user.username if user else form.username.data or '' }}" required>
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.username.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">E-mail*</label>
+                                <input type="email" class="form-control{% if form.email.errors %} is-invalid{% endif %}" id="email" name="email" value="{{ user.email if user else form.email.data or '' }}" required>
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.email.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Nome Completo*</label>
+                                <input type="text" class="form-control{% if form.name.errors %} is-invalid{% endif %}" id="name" name="name" value="{{ user.name if user else form.name.data or '' }}" required>
+                                {% if form.name.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Telefone</label>
+                                <input type="text" class="form-control{% if form.phone.errors %} is-invalid{% endif %}" id="phone" name="phone" value="{{ user.phone if user else form.phone.data or '' }}">
+                                {% if form.phone.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.phone.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="department" class="form-label">Departamento</label>
+                                <input type="text" class="form-control{% if form.department.errors %} is-invalid{% endif %}" id="department" name="department" value="{{ user.department if user else form.department.data or '' }}">
+                                {% if form.department.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.department.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="job_title" class="form-label">Cargo</label>
+                                <input type="text" class="form-control{% if form.job_title.errors %} is-invalid{% endif %}" id="job_title" name="job_title" value="{{ user.job_title if user else form.job_title.data or '' }}">
+                                {% if form.job_title.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.job_title.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if not user %}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="password" class="form-label">Senha*</label>
+                                    <input type="password" class="form-control{% if form.password.errors %} is-invalid{% endif %}" id="password" name="password" required>
+                                    {% if form.password.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.password.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirm_password" class="form-label">Confirmar Senha*</label>
+                                    <input type="password" class="form-control{% if form.confirm_password.errors %} is-invalid{% endif %}" id="confirm_password" name="confirm_password" required>
+                                    {% if form.confirm_password.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.confirm_password.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="avatar" class="form-label">Foto de Perfil</label>
+                            <input type="file" class="form-control{% if form.avatar.errors %} is-invalid{% endif %}" id="avatar" name="avatar" accept="image/*">
+                            {% if form.avatar.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.avatar.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Imagem de perfil do usuário (opcional).</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Biografia</label>
+                            <textarea class="form-control{% if form.bio.errors %} is-invalid{% endif %}" id="bio" name="bio" rows="3">{{ user.bio if user else form.bio.data or '' }}</textarea>
+                            {% if form.bio.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.bio.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Uma breve descrição sobre o usuário (opcional).</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_active" name="is_active" {% if user and user.is_active or not user %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">Usuário Ativo</label>
+                            <div class="form-text">Desmarque para desativar temporariamente o acesso deste usuário.</div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('auth.usuarios') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> {% if user %}Atualizar{% else %}Criar{% endif %} Usuário
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Redefinir Senha (apenas para edição) -->
+            {% if user %}
+                <div class="card shadow-sm user-form-card">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-key me-2"></i> Redefinir Senha</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('auth.reset_usuario_senha', user_id=user.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="new_password" class="form-label">Nova Senha*</label>
+                                    <input type="password" class="form-control" id="new_password" name="new_password" required>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirm_new_password" class="form-label">Confirmar Nova Senha*</label>
+                                    <input type="password" class="form-control" id="confirm_new_password" name="confirm_new_password" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="force_change" name="force_change">
+                                <label class="form-check-label" for="force_change">
+                                    Exigir mudança de senha no próximo login
+                                </label>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-key me-2"></i> Redefinir Senha
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Funções e Permissões -->
+            <div class="card shadow-sm user-form-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-user-shield me-2"></i> Funções e Permissões</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% if user %}{{ url_for('auth.atualizar_permissoes', user_id=user.id) }}{% else %}#{% endif %}" id="permissionsForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-4">
+                            <div class="form-label">Selecione uma Função</div>
+                            
+                            <div class="role-option{% if user and user.is_admin %} selected{% endif %}" data-role="admin">
+                                <div class="role-icon">
+                                    <i class="fas fa-user-shield"></i>
+                                </div>
+                                <div class="role-content">
+                                    <div class="role-title">Administrador</div>
+                                    <div class="role-description">Acesso completo a todas as funcionalidades do sistema.</div>
+                                </div>
+                                <div class="form-check form-check-inline ms-2">
+                                    <input class="form-check-input" type="radio" name="role" id="roleAdmin" value="admin" {% if user and user.is_admin %}checked{% endif %}>
+                                    <label class="form-check-label" for="roleAdmin"></label>
+                                </div>
+                            </div>
+                            
+                            <div class="role-option{% if user and user.role == 'gestor' %} selected{% endif %}" data-role="gestor">
+                                <div class="role-icon">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <div class="role-content">
+                                    <div class="role-title">Gestor</div>
+                                    <div class="role-description">Acesso a funções de gerenciamento, mas sem configurações de sistema.</div>
+                                </div>
+                                <div class="form-check form-check-inline ms-2">
+                                    <input class="form-check-input" type="radio" name="role" id="roleGestor" value="gestor" {% if user and user.role == 'gestor' %}checked{% endif %}>
+                                    <label class="form-check-label" for="roleGestor"></label>
+                                </div>
+                            </div>
+                            
+                            <div class="role-option{% if user and not user.is_admin and user.role != 'gestor' %} selected{% endif %}" data-role="usuario">
+                                <div class="role-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="role-content">
+                                    <div class="role-title">Usuário</div>
+                                    <div class="role-description">Acesso básico às funcionalidades do sistema.</div>
+                                </div>
+                                <div class="form-check form-check-inline ms-2">
+                                    <input class="form-check-input" type="radio" name="role" id="roleUsuario" value="usuario" {% if user and not user.is_admin and user.role != 'gestor' %}checked{% endif %} {% if not user %}checked{% endif %}>
+                                    <label class="form-check-label" for="roleUsuario"></label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Permissões Personalizadas -->
+                        <div class="permission-section">
+                            <div class="permission-header">Permissões Personalizadas</div>
+                            
+                            <div class="permission-group">
+                                <div class="permission-group-title">Documentos</div>
+                                <div class="permission-checks">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_doc_view" name="permissions[]" value="doc_view" {% if user and 'doc_view' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_doc_view">Visualizar</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_doc_create" name="permissions[]" value="doc_create" {% if user and 'doc_create' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_doc_create">Criar</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_doc_edit" name="permissions[]" value="doc_edit" {% if user and 'doc_edit' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_doc_edit">Editar</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_doc_delete" name="permissions[]" value="doc_delete" {% if user and 'doc_delete' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_doc_delete">Excluir</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="permission-group">
+                                <div class="permission-group-title">Formulários</div>
+                                <div class="permission-checks">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_form_view" name="permissions[]" value="form_view" {% if user and 'form_view' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_form_view">Visualizar</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_form_fill" name="permissions[]" value="form_fill" {% if user and 'form_fill' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_form_fill">Preencher</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_form_create" name="permissions[]" value="form_create" {% if user and 'form_create' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_form_create">Criar</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="permission-group">
+                                <div class="permission-group-title">Relatórios</div>
+                                <div class="permission-checks">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_report_view" name="permissions[]" value="report_view" {% if user and 'report_view' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_report_view">Visualizar</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_report_create" name="permissions[]" value="report_create" {% if user and 'report_create' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_report_create">Criar</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_report_export" name="permissions[]" value="report_export" {% if user and 'report_export' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_report_export">Exportar</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="permission-group">
+                                <div class="permission-group-title">Cálculos</div>
+                                <div class="permission-checks">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_calc_view" name="permissions[]" value="calc_view" {% if user and 'calc_view' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_calc_view">Visualizar</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_calc_execute" name="permissions[]" value="calc_execute" {% if user and 'calc_execute' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_calc_execute">Executar</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="permission-group">
+                                <div class="permission-group-title">Estoque</div>
+                                <div class="permission-checks">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_estoque_view" name="permissions[]" value="estoque_view" {% if user and 'estoque_view' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_estoque_view">Visualizar</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="perm_estoque_edit" name="permissions[]" value="estoque_edit" {% if user and 'estoque_edit' in user_permissions %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_estoque_edit">Editar</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if user %}
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i> Atualizar Permissões
+                                </button>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Usuário Atual -->
+            {% if user %}
+                <div class="card shadow-sm user-form-card">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-info-circle me-2"></i> Informações do Sistema</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <div class="profile-avatar">
+                                {% if user.avatar %}
+                                    <img src="{{ url_for('auth.user_avatar', filename=user.avatar) }}" alt="Avatar do Usuário">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='img/default-avatar.png') }}" alt="Avatar do Usuário">
+                                {% endif %}
+                            </div>
+                            <div class="h5">{{ user.name }}</div>
+                            <div class="text-muted">{{ user.username }}</div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="text-muted small">ID de Usuário</div>
+                            <div>{{ user.id }}</div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="text-muted small">Status</div>
+                            <div>
+                                {% if user.is_active %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inativo</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="text-muted small">Cadastrado em</div>
+                            <div>{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="text-muted small">Último Login</div>
+                            <div>{{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Nunca' }}</div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="text-muted small">Última Alteração</div>
+                            <div>{{ user.updated_at.strftime('%d/%m/%Y %H:%M') if user.updated_at else 'Nunca' }}</div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="text-muted small">Atualizado por</div>
+                            <div>{{ user.updated_by_name if user.updated_by_name else 'N/A' }}</div>
+                        </div>
+                        
+                        {% if user.id != current_user.id %}
+                            <div class="d-grid gap-2 mt-4">
+                                <form method="POST" action="{{ url_for('auth.desativar_usuario', user_id=user.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    {% if user.is_active %}
+                                        <button type="submit" class="btn btn-outline-danger w-100">
+                                            <i class="fas fa-user-slash me-2"></i> Desativar Usuário
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-outline-success w-100">
+                                            <i class="fas fa-user-check me-2"></i> Ativar Usuário
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ativar o link de usuários no menu
+        const navItems = document.querySelectorAll('.nav-item .nav-link');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const usersLink = document.querySelector('a[href="{{ url_for("auth.usuarios") }}"]');
+        if (usersLink) {
+            usersLink.classList.add('active');
+        }
+        
+        // Seleção de função
+        const roleOptions = document.querySelectorAll('.role-option');
+        
+        roleOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remover seleção anterior
+                roleOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Selecionar a nova opção
+                this.classList.add('selected');
+                
+                // Marcar o radio button correspondente
+                const role = this.getAttribute('data-role');
+                document.querySelector(`input[name="role"][value="${role}"]`).checked = true;
+                
+                // Atualizar permissões com base na função selecionada
+                updatePermissionsByRole(role);
+            });
+        });
+        
+        // Função para atualizar permissões com base na função
+        function updatePermissionsByRole(role) {
+            const permCheckboxes = document.querySelectorAll('input[name="permissions[]"]');
+            
+            // Resetar todas as permissões
+            permCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Aplicar permissões baseadas na função
+            if (role === 'admin') {
+                // Administrador tem todas as permissões
+                permCheckboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                });
+            } else if (role === 'gestor') {
+                // Gestor tem permissões específicas
+                const gestorPerms = [
+                    'doc_view', 'doc_create', 'doc_edit', 
+                    'form_view', 'form_fill', 'form_create',
+                    'report_view', 'report_create', 'report_export',
+                    'calc_view', 'calc_execute',
+                    'estoque_view'
+                ];
+                
+                permCheckboxes.forEach(checkbox => {
+                    if (gestorPerms.includes(checkbox.value)) {
+                        checkbox.checked = true;
+                    }
+                });
+            } else {
+                // Usuário regular tem permissões básicas
+                const userPerms = [
+                    'doc_view', 
+                    'form_view', 'form_fill',
+                    'report_view',
+                    'calc_view',
+                    'estoque_view'
+                ];
+                
+                permCheckboxes.forEach(checkbox => {
+                    if (userPerms.includes(checkbox.value)) {
+                        checkbox.checked = true;
+                    }
+                });
+            }
+        }
+        
+        // Inicializar formulário de novo usuário
+        const form = document.querySelector('form');
+        const permissionsForm = document.getElementById('permissionsForm');
+        
+        {% if not user %}
+            if (form && permissionsForm) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Coletar permissões selecionadas
+                    const selectedPerms = [];
+                    document.querySelectorAll('input[name="permissions[]"]:checked').forEach(checkbox => {
+                        selectedPerms.push(checkbox.value);
+                    });
+                    
+                    // Adicionar campo oculto para a função
+                    const roleInput = document.createElement('input');
+                    roleInput.type = 'hidden';
+                    roleInput.name = 'role';
+                    roleInput.value = document.querySelector('input[name="role"]:checked').value;
+                    this.appendChild(roleInput);
+                    
+                    // Adicionar campos ocultos para permissões
+                    selectedPerms.forEach(perm => {
+                        const permInput = document.createElement('input');
+                        permInput.type = 'hidden';
+                        permInput.name = 'permissions[]';
+                        permInput.value = perm;
+                        this.appendChild(permInput);
+                    });
+                    
+                    // Enviar formulário
+                    this.submit();
+                });
+            }
+        {% endif %}
+    });
+</script>
+{% endblock %}

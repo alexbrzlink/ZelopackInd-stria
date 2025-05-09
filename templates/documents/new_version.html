@@ -1,0 +1,537 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova Versão do Documento - Zelopack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-header {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .section-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-header p {
+        opacity: 0.85;
+        max-width: 80%;
+    }
+    
+    .document-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .document-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .document-card .card-header {
+        background-color: #f8f9fa;
+        border-bottom: none;
+        padding: 1.25rem;
+    }
+    
+    .document-card .card-title {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .document-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .document-badge {
+        display: inline-block;
+        padding: 0.35rem 0.65rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .document-badge-pdf {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .document-badge-word {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .document-badge-excel {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .document-badge-image {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+    
+    .document-badge-other {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .metadata-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .metadata-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .metadata-item {
+        margin-bottom: 0.75rem;
+    }
+    
+    .metadata-label {
+        font-weight: 500;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .metadata-value {
+        font-weight: 400;
+    }
+    
+    .version-section {
+        margin-top: 1.5rem;
+    }
+    
+    .version-timeline {
+        position: relative;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    
+    .version-timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 1rem;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .version-item {
+        position: relative;
+        padding-left: 3rem;
+        padding-bottom: 1.5rem;
+    }
+    
+    .version-item:last-child {
+        padding-bottom: 0;
+    }
+    
+    .version-badge {
+        position: absolute;
+        left: 0;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        border: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 600;
+        z-index: 1;
+    }
+    
+    .version-current {
+        background-color: #4CAF50;
+        color: white;
+        border-color: #4CAF50;
+    }
+    
+    .version-content {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    
+    .version-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    
+    .version-number {
+        font-weight: 600;
+    }
+    
+    .version-date {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    
+    .version-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .version-notes {
+        background-color: white;
+        border-radius: 4px;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .comparison-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .diff-added {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+        padding: 2px 4px;
+        border-radius: 2px;
+    }
+    
+    .diff-removed {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        padding: 2px 4px;
+        border-radius: 2px;
+        text-decoration: line-through;
+    }
+    
+    .diff-section {
+        padding: 0.75rem;
+        background-color: white;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.9rem;
+        margin-top: 0.75rem;
+        overflow-x: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho da Seção -->
+    <div class="section-header mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-code-branch me-2"></i> Nova Versão do Documento</h1>
+                <p class="mb-0">Crie uma nova versão do documento mantendo o histórico de alterações.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <div class="btn-group">
+                    <a href="{{ url_for('documents.index') }}" class="btn btn-light">
+                        <i class="fas fa-folder me-2"></i> Todos os Documentos
+                    </a>
+                    <a href="{{ url_for('documents.view', document_id=document.id) }}" class="btn btn-light">
+                        <i class="fas fa-file me-2"></i> Visualizar Documento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Formulário de Nova Versão -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Detalhes da Nova Versão -->
+            <div class="card shadow-sm document-card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-code-branch me-2"></i> Criar Nova Versão</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('documents.create_version', document_id=document.id) }}" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="document_id" value="{{ document.id }}">
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Título do Documento*</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ document.title }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ document.description }}</textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="version" class="form-label">Nova Versão*</label>
+                                <input type="text" class="form-control" id="version" name="version" value="{{ suggested_version }}" required>
+                                <div class="form-text">Versão atual: {{ document.version }}</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="active" {% if document.status == 'active' %}selected{% endif %}>Ativo</option>
+                                    <option value="archived" {% if document.status == 'archived' %}selected{% endif %}>Arquivado</option>
+                                    <option value="draft" {% if document.status == 'draft' %}selected{% endif %}>Rascunho</option>
+                                    <option value="deprecated" {% if document.status == 'deprecated' %}selected{% endif %}>Obsoleto</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="version_notes" class="form-label">Notas da Versão*</label>
+                            <textarea class="form-control" id="version_notes" name="version_notes" rows="3" required></textarea>
+                            <div class="form-text">Descreva as alterações realizadas nesta nova versão.</div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Novo Arquivo*</label>
+                            <input type="file" class="form-control" id="file" name="file" required>
+                            <div class="form-text">O novo arquivo substituirá o atual, que será mantido no histórico de versões.</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="update_metadata" name="update_metadata" checked>
+                            <label class="form-check-label" for="update_metadata">Atualizar metadados</label>
+                            <div class="form-text">Os metadados do documento atual serão copiados para a nova versão.</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="needs_approval" name="needs_approval">
+                            <label class="form-check-label" for="needs_approval">Requer aprovação</label>
+                            <div class="form-text">Se marcado, a nova versão ficará pendente de aprovação.</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('documents.view', document_id=document.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-code-branch me-2"></i> Criar Nova Versão
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Comparação de Versões -->
+            <div class="card shadow-sm document-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-exchange-alt me-2"></i> Alterações Recentes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="comparison-section">
+                        <div class="metadata-title">Histórico de Alterações</div>
+                        
+                        {% if comparison %}
+                            <div class="comparison-summary mb-3">
+                                {% if comparison.changes == 0 %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i> Não há alterações detectadas entre as últimas versões.
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-check-circle me-2"></i> {{ comparison.changes }} alterações detectadas entre as versões {{ comparison.old_version }} e {{ comparison.current_version }}.
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            {% if comparison.diff_sections %}
+                                {% for section in comparison.diff_sections %}
+                                    <div class="mb-3">
+                                        <div class="metadata-label">{{ section.title }}</div>
+                                        <div class="diff-section">
+                                            {% for line in section.content %}
+                                                <div>
+                                                    {% if line.type == 'added' %}
+                                                        <span class="diff-added">+ {{ line.text }}</span>
+                                                    {% elif line.type == 'removed' %}
+                                                        <span class="diff-removed">- {{ line.text }}</span>
+                                                    {% else %}
+                                                        <span>{{ line.text }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> Este é o primeiro documento ou não há suporte para comparação deste tipo de arquivo.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Painel do Documento -->
+            <div class="card shadow-sm document-card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-file me-2"></i> Documento Atual</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if document.file_extension == '.pdf' %}
+                            <i class="fas fa-file-pdf fa-5x text-danger mb-3"></i>
+                            <span class="document-badge document-badge-pdf">PDF</span>
+                        {% elif document.file_extension in ['.doc', '.docx'] %}
+                            <i class="fas fa-file-word fa-5x text-primary mb-3"></i>
+                            <span class="document-badge document-badge-word">Word</span>
+                        {% elif document.file_extension in ['.xls', '.xlsx'] %}
+                            <i class="fas fa-file-excel fa-5x text-success mb-3"></i>
+                            <span class="document-badge document-badge-excel">Excel</span>
+                        {% elif document.file_extension in ['.jpg', '.jpeg', '.png', '.gif'] %}
+                            <i class="fas fa-file-image fa-5x text-warning mb-3"></i>
+                            <span class="document-badge document-badge-image">Imagem</span>
+                        {% else %}
+                            <i class="fas fa-file fa-5x text-secondary mb-3"></i>
+                            <span class="document-badge document-badge-other">{{ document.file_extension }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="metadata-section">
+                        <div class="metadata-item">
+                            <div class="metadata-label">Título</div>
+                            <div class="metadata-value">{{ document.title }}</div>
+                        </div>
+                        
+                        <div class="metadata-item">
+                            <div class="metadata-label">Versão Atual</div>
+                            <div class="metadata-value">{{ document.version }}</div>
+                        </div>
+                        
+                        <div class="metadata-item">
+                            <div class="metadata-label">Nome do Arquivo</div>
+                            <div class="metadata-value">{{ document.filename }}</div>
+                        </div>
+                        
+                        <div class="metadata-item">
+                            <div class="metadata-label">Tamanho</div>
+                            <div class="metadata-value">{{ document.file_size|filesizeformat }}</div>
+                        </div>
+                        
+                        <div class="metadata-item">
+                            <div class="metadata-label">Última atualização</div>
+                            <div class="metadata-value">{{ document.updated_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                        </div>
+                        
+                        <div class="metadata-item">
+                            <div class="metadata-label">Status</div>
+                            <div class="metadata-value">
+                                {% if document.status == 'active' %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% elif document.status == 'archived' %}
+                                    <span class="badge bg-secondary">Arquivado</span>
+                                {% elif document.status == 'draft' %}
+                                    <span class="badge bg-warning">Rascunho</span>
+                                {% elif document.status == 'deprecated' %}
+                                    <span class="badge bg-danger">Obsoleto</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">{{ document.status }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('documents.download', document_id=document.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-download me-2"></i> Baixar Arquivo
+                        </a>
+                        <a href="{{ url_for('documents.view', document_id=document.id) }}" class="btn btn-outline-info">
+                            <i class="fas fa-eye me-2"></i> Visualizar Documento
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Versões do Documento -->
+            <div class="card shadow-sm document-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-history me-2"></i> Histórico de Versões</h5>
+                </div>
+                <div class="card-body">
+                    <div class="version-section">
+                        <ul class="version-timeline">
+                            {% for version in versions %}
+                                <li class="version-item">
+                                    <div class="version-badge {% if version.id == document.id %}version-current{% endif %}">
+                                        {{ version.version }}
+                                    </div>
+                                    <div class="version-content">
+                                        <div class="version-header">
+                                            <span class="version-number">Versão {{ version.version }}</span>
+                                            <span class="version-date">{{ version.created_at.strftime('%d/%m/%Y') }}</span>
+                                        </div>
+                                        <div class="version-meta">
+                                            <i class="fas fa-user me-1"></i> {{ version.created_by_user.name }}
+                                        </div>
+                                        
+                                        {% if version.version_notes %}
+                                            <div class="version-notes">
+                                                {{ version.version_notes }}
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="mt-2">
+                                            <a href="{{ url_for('documents.view', document_id=version.id) }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-eye me-1"></i> Ver
+                                            </a>
+                                            
+                                            {% if version.id != document.id %}
+                                                <a href="{{ url_for('documents.compare_versions', document_id=document.id, version_id=version.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-exchange-alt me-1"></i> Comparar
+                                                </a>
+                                            {% else %}
+                                                <span class="badge bg-success">Atual</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ativar o link de documentos no menu
+        const navItems = document.querySelectorAll('.nav-item .nav-link');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const docsLink = document.querySelector('a[href="{{ url_for("documents.index") }}"]');
+        if (docsLink) {
+            docsLink.classList.add('active');
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,506 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Documento - Zelopack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-header {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .section-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-header p {
+        opacity: 0.85;
+        max-width: 80%;
+    }
+    
+    .document-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .document-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .document-card .card-header {
+        background-color: #f8f9fa;
+        border-bottom: none;
+        padding: 1.25rem;
+    }
+    
+    .document-card .card-title {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .document-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .document-badge {
+        display: inline-block;
+        padding: 0.35rem 0.65rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .document-badge-pdf {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .document-badge-word {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .document-badge-excel {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .document-badge-image {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+    
+    .document-badge-other {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .metadata-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .metadata-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .metadata-item {
+        margin-bottom: 0.75rem;
+    }
+    
+    .metadata-label {
+        font-weight: 500;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .metadata-value {
+        font-weight: 400;
+    }
+    
+    .version-section {
+        margin-top: 1.5rem;
+    }
+    
+    .version-timeline {
+        position: relative;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    
+    .version-timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 1rem;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .version-item {
+        position: relative;
+        padding-left: 3rem;
+        padding-bottom: 1.5rem;
+    }
+    
+    .version-item:last-child {
+        padding-bottom: 0;
+    }
+    
+    .version-badge {
+        position: absolute;
+        left: 0;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        border: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 600;
+        z-index: 1;
+    }
+    
+    .version-current {
+        background-color: #4CAF50;
+        color: white;
+        border-color: #4CAF50;
+    }
+    
+    .version-content {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    
+    .version-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    
+    .version-number {
+        font-weight: 600;
+    }
+    
+    .version-date {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    
+    .version-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .version-notes {
+        background-color: white;
+        border-radius: 4px;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho da Seção -->
+    <div class="section-header mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-edit me-2"></i> Editar Documento</h1>
+                <p class="mb-0">Modifique os detalhes e metadados do documento.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <div class="btn-group">
+                    <a href="{{ url_for('documents.index') }}" class="btn btn-light">
+                        <i class="fas fa-folder me-2"></i> Todos os Documentos
+                    </a>
+                    <a href="{{ url_for('documents.view', document_id=document.id) }}" class="btn btn-light">
+                        <i class="fas fa-file me-2"></i> Visualizar Documento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Formulário de Edição -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Detalhes Principais -->
+            <div class="card shadow-sm document-card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-pen me-2"></i> Informações do Documento</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('documents.update', document_id=document.id) }}" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="document_id" value="{{ document.id }}">
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Título do Documento*</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ document.title }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ document.description }}</textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="category" class="form-label">Categoria*</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">Selecionar Categoria</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}" {% if document.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="active" {% if document.status == 'active' %}selected{% endif %}>Ativo</option>
+                                    <option value="archived" {% if document.status == 'archived' %}selected{% endif %}>Arquivado</option>
+                                    <option value="draft" {% if document.status == 'draft' %}selected{% endif %}>Rascunho</option>
+                                    <option value="deprecated" {% if document.status == 'deprecated' %}selected{% endif %}>Obsoleto</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="doc_number" class="form-label">Número do Documento</label>
+                                <input type="text" class="form-control" id="doc_number" name="doc_number" value="{{ document.doc_number }}">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="version" class="form-label">Versão</label>
+                                <input type="text" class="form-control" id="version" name="version" value="{{ document.version }}" readonly>
+                                <div class="form-text">Para criar uma nova versão, use a opção "Nova Versão" na página de visualização.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="tags" class="form-label">Tags</label>
+                            <input type="text" class="form-control" id="tags" name="tags" value="{{ document.tags }}">
+                            <div class="form-text">Separe as tags com vírgulas (ex: qualidade, padrão, procedimento)</div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Substituir Arquivo (opcional)</label>
+                            <input type="file" class="form-control" id="file" name="file">
+                            <div class="form-text">Deixe em branco para manter o arquivo atual.</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('documents.view', document_id=document.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Metadados Adicionais -->
+            <div class="card shadow-sm document-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-tags me-2"></i> Metadados Adicionais</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('documents.update_metadata', document_id=document.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="document_id" value="{{ document.id }}">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="author" class="form-label">Autor</label>
+                                <input type="text" class="form-control" id="author" name="author" value="{{ metadata.author if metadata else '' }}">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="department" class="form-label">Departamento</label>
+                                <input type="text" class="form-control" id="department" name="department" value="{{ metadata.department if metadata else '' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="expiration_date" class="form-label">Data de Expiração</label>
+                                <input type="date" class="form-control" id="expiration_date" name="expiration_date" value="{{ metadata.expiration_date if metadata else '' }}">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="review_date" class="form-label">Data de Revisão</label>
+                                <input type="date" class="form-control" id="review_date" name="review_date" value="{{ metadata.review_date if metadata else '' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="keywords" class="form-label">Palavras-chave</label>
+                            <input type="text" class="form-control" id="keywords" name="keywords" value="{{ metadata.keywords if metadata else '' }}">
+                            <div class="form-text">Separe as palavras-chave com vírgulas</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notas Adicionais</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3">{{ metadata.notes if metadata else '' }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="requires_approval" name="requires_approval" {% if metadata and metadata.requires_approval %}checked{% endif %}>
+                            <label class="form-check-label" for="requires_approval">Requer Aprovação</label>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_confidential" name="is_confidential" {% if metadata and metadata.is_confidential %}checked{% endif %}>
+                            <label class="form-check-label" for="is_confidential">Documento Confidencial</label>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-tags me-2"></i> Atualizar Metadados
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Painel do Documento -->
+            <div class="card shadow-sm document-card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-file me-2"></i> Documento Atual</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if document.file_extension == '.pdf' %}
+                            <i class="fas fa-file-pdf fa-5x text-danger mb-3"></i>
+                            <span class="document-badge document-badge-pdf">PDF</span>
+                        {% elif document.file_extension in ['.doc', '.docx'] %}
+                            <i class="fas fa-file-word fa-5x text-primary mb-3"></i>
+                            <span class="document-badge document-badge-word">Word</span>
+                        {% elif document.file_extension in ['.xls', '.xlsx'] %}
+                            <i class="fas fa-file-excel fa-5x text-success mb-3"></i>
+                            <span class="document-badge document-badge-excel">Excel</span>
+                        {% elif document.file_extension in ['.jpg', '.jpeg', '.png', '.gif'] %}
+                            <i class="fas fa-file-image fa-5x text-warning mb-3"></i>
+                            <span class="document-badge document-badge-image">Imagem</span>
+                        {% else %}
+                            <i class="fas fa-file fa-5x text-secondary mb-3"></i>
+                            <span class="document-badge document-badge-other">{{ document.file_extension }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="metadata-section">
+                        <div class="metadata-item">
+                            <div class="metadata-label">Nome do Arquivo</div>
+                            <div class="metadata-value">{{ document.filename }}</div>
+                        </div>
+                        
+                        <div class="metadata-item">
+                            <div class="metadata-label">Tamanho</div>
+                            <div class="metadata-value">{{ document.file_size|filesizeformat }}</div>
+                        </div>
+                        
+                        <div class="metadata-item">
+                            <div class="metadata-label">Enviado em</div>
+                            <div class="metadata-value">{{ document.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                        </div>
+                        
+                        <div class="metadata-item">
+                            <div class="metadata-label">Última atualização</div>
+                            <div class="metadata-value">{{ document.updated_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                        </div>
+                        
+                        <div class="metadata-item">
+                            <div class="metadata-label">Enviado por</div>
+                            <div class="metadata-value">{{ document.created_by_user.name }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('documents.download', document_id=document.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-download me-2"></i> Baixar Arquivo
+                        </a>
+                        <a href="{{ url_for('documents.view', document_id=document.id) }}" class="btn btn-outline-info">
+                            <i class="fas fa-eye me-2"></i> Visualizar Documento
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Versões do Documento -->
+            <div class="card shadow-sm document-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-history me-2"></i> Histórico de Versões</h5>
+                </div>
+                <div class="card-body">
+                    <div class="version-section">
+                        <ul class="version-timeline">
+                            {% for version in versions %}
+                                <li class="version-item">
+                                    <div class="version-badge {% if version.id == document.id %}version-current{% endif %}">
+                                        {{ version.version }}
+                                    </div>
+                                    <div class="version-content">
+                                        <div class="version-header">
+                                            <span class="version-number">Versão {{ version.version }}</span>
+                                            <span class="version-date">{{ version.created_at.strftime('%d/%m/%Y') }}</span>
+                                        </div>
+                                        <div class="version-meta">
+                                            <i class="fas fa-user me-1"></i> {{ version.created_by_user.name }}
+                                        </div>
+                                        
+                                        {% if version.version_notes %}
+                                            <div class="version-notes">
+                                                {{ version.version_notes }}
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="mt-2">
+                                            <a href="{{ url_for('documents.view', document_id=version.id) }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-eye me-1"></i> Ver
+                                            </a>
+                                            
+                                            {% if version.id != document.id %}
+                                                <a href="{{ url_for('documents.restore_version', document_id=document.id, version_id=version.id) }}" class="btn btn-sm btn-outline-warning">
+                                                    <i class="fas fa-undo me-1"></i> Restaurar
+                                                </a>
+                                            {% else %}
+                                                <span class="badge bg-success">Atual</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ativar o link de documentos no menu
+        const navItems = document.querySelectorAll('.nav-item .nav-link');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const docsLink = document.querySelector('a[href="{{ url_for("documents.index") }}"]');
+        if (docsLink) {
+            docsLink.classList.add('active');
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,756 @@
+{% extends 'base.html' %}
+
+{% block title %}Enviar Documento - Zelopack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-header {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .section-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-header p {
+        opacity: 0.85;
+        max-width: 80%;
+    }
+    
+    .upload-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .upload-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .upload-card .card-header {
+        background-color: #f8f9fa;
+        border-bottom: none;
+        padding: 1.25rem;
+    }
+    
+    .upload-card .card-title {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .upload-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .file-types-container {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .file-type-item {
+        display: flex;
+        align-items: center;
+        margin-right: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .file-type-icon {
+        font-size: 2rem;
+        margin-right: 0.5rem;
+    }
+    
+    .file-type-info {
+        font-size: 0.9rem;
+    }
+    
+    .file-type-name {
+        font-weight: 600;
+    }
+    
+    .file-type-ext {
+        color: #6c757d;
+    }
+    
+    .upload-container {
+        position: relative;
+        border: 2px dashed #ced4da;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        transition: border-color 0.3s ease, background-color 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+    
+    .upload-container:hover {
+        border-color: #4CAF50;
+        background-color: rgba(76, 175, 80, 0.05);
+    }
+    
+    .upload-icon {
+        font-size: 3rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .upload-text {
+        margin-bottom: 1rem;
+    }
+    
+    .upload-text h4 {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .upload-text p {
+        color: #6c757d;
+    }
+    
+    .upload-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .upload-preview {
+        display: none;
+        margin-top: 1.5rem;
+    }
+    
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .preview-title {
+        font-weight: 600;
+    }
+    
+    .preview-item {
+        display: flex;
+        align-items: center;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .preview-icon {
+        font-size: 2rem;
+        margin-right: 1rem;
+    }
+    
+    .preview-info {
+        flex: 1;
+    }
+    
+    .preview-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        word-break: break-all;
+    }
+    
+    .preview-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .preview-actions {
+        margin-left: 1rem;
+    }
+    
+    .category-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .category-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .category-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .category-item {
+        background-color: #f8f9fa;
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    .category-item:hover {
+        background-color: #e9ecef;
+    }
+    
+    .category-item.active {
+        background-color: #4CAF50;
+        color: white;
+    }
+    
+    .upload-progress {
+        margin-top: 1.5rem;
+        display: none;
+    }
+    
+    .progress {
+        height: 8px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .recent-uploads {
+        margin-top: 1.5rem;
+    }
+    
+    .recent-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .recent-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .recent-item:last-child {
+        border-bottom: none;
+    }
+    
+    .recent-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+    
+    .recent-info {
+        flex: 1;
+    }
+    
+    .recent-name {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .recent-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho da Seção -->
+    <div class="section-header mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-upload me-2"></i> Enviar Documento</h1>
+                <p class="mb-0">Carregue arquivos para serem organizados e compartilhados com a equipe.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <div class="btn-group">
+                    <a href="{{ url_for('documents.index') }}" class="btn btn-light">
+                        <i class="fas fa-folder me-2"></i> Todos os Documentos
+                    </a>
+                    <a href="{{ url_for('documents.search') }}" class="btn btn-light">
+                        <i class="fas fa-search me-2"></i> Pesquisar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Formulário de Upload -->
+            <div class="card shadow-sm upload-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-file-upload me-2"></i> Enviar Arquivo</h5>
+                </div>
+                <div class="card-body">
+                    <form id="uploadForm" method="POST" action="{{ url_for('documents.upload') }}" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- Área de Upload -->
+                        <div class="upload-container" id="dropArea">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="upload-text">
+                                <h4>Arraste e solte arquivos aqui</h4>
+                                <p>ou clique para selecionar arquivos</p>
+                            </div>
+                            <input type="file" class="upload-input" id="fileInput" name="file" required>
+                        </div>
+                        
+                        <!-- Preview do Arquivo -->
+                        <div class="upload-preview" id="filePreview">
+                            <div class="preview-header">
+                                <div class="preview-title">Arquivo Selecionado</div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="clearFileBtn">
+                                    <i class="fas fa-times me-1"></i> Limpar
+                                </button>
+                            </div>
+                            <div class="preview-item">
+                                <div class="preview-icon" id="previewIcon">
+                                    <i class="fas fa-file"></i>
+                                </div>
+                                <div class="preview-info">
+                                    <div class="preview-name" id="previewName">nome_do_arquivo.pdf</div>
+                                    <div class="preview-meta" id="previewMeta">PDF • 2.5 MB</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Informações do Documento -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Título do Documento*</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="category" class="form-label">Categoria*</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">Selecionar Categoria</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="doc_number" class="form-label">Número do Documento</label>
+                                <input type="text" class="form-control" id="doc_number" name="doc_number">
+                                <div class="form-text">Ex: ZP-DOC-2023-001</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="tags" class="form-label">Tags</label>
+                            <input type="text" class="form-control" id="tags" name="tags">
+                            <div class="form-text">Separe as tags com vírgulas (ex: qualidade, padrão, procedimento)</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_confidential" name="is_confidential">
+                            <label class="form-check-label" for="is_confidential">Documento Confidencial</label>
+                            <div class="form-text">Documentos confidenciais só podem ser visualizados por administradores e usuários autorizados.</div>
+                        </div>
+                        
+                        <!-- Barra de Progresso -->
+                        <div class="upload-progress" id="uploadProgress">
+                            <div class="progress">
+                                <div class="progress-bar bg-success" id="progressBar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span id="progressText">0%</span>
+                                <span id="progressSpeed">0 KB/s</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg" id="uploadBtn">
+                                <i class="fas fa-upload me-2"></i> Enviar Documento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Dicas e Informações -->
+            <div class="card shadow-sm upload-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-lightbulb me-2"></i> Dicas e Informações</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6><i class="fas fa-info-circle me-2"></i> Tamanho Máximo</h6>
+                                <p>O tamanho máximo permitido para upload é de {{ max_size }}.</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6><i class="fas fa-tag me-2"></i> Categorização</h6>
+                                <p>Categorizar corretamente seus documentos ajuda a mantê-los organizados e facilita a busca.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6><i class="fas fa-file-alt me-2"></i> Nomes de Arquivos</h6>
+                                <p>Use nomes descritivos para seus arquivos, evitando caracteres especiais.</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6><i class="fas fa-shield-alt me-2"></i> Confidencialidade</h6>
+                                <p>Marque documentos como confidenciais para restringir o acesso apenas a usuários autorizados.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Tipos de Arquivos -->
+            <div class="card shadow-sm upload-card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-file-alt me-2"></i> Tipos de Arquivos Permitidos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="file-types-container">
+                        <div class="file-type-item">
+                            <div class="file-type-icon text-danger">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="file-type-info">
+                                <div class="file-type-name">PDF</div>
+                                <div class="file-type-ext">.pdf</div>
+                            </div>
+                        </div>
+                        
+                        <div class="file-type-item">
+                            <div class="file-type-icon text-primary">
+                                <i class="fas fa-file-word"></i>
+                            </div>
+                            <div class="file-type-info">
+                                <div class="file-type-name">Word</div>
+                                <div class="file-type-ext">.doc, .docx</div>
+                            </div>
+                        </div>
+                        
+                        <div class="file-type-item">
+                            <div class="file-type-icon text-success">
+                                <i class="fas fa-file-excel"></i>
+                            </div>
+                            <div class="file-type-info">
+                                <div class="file-type-name">Excel</div>
+                                <div class="file-type-ext">.xls, .xlsx</div>
+                            </div>
+                        </div>
+                        
+                        <div class="file-type-item">
+                            <div class="file-type-icon text-warning">
+                                <i class="fas fa-file-image"></i>
+                            </div>
+                            <div class="file-type-info">
+                                <div class="file-type-name">Imagens</div>
+                                <div class="file-type-ext">.jpg, .png, .gif</div>
+                            </div>
+                        </div>
+                        
+                        <div class="file-type-item">
+                            <div class="file-type-icon text-info">
+                                <i class="fas fa-file-powerpoint"></i>
+                            </div>
+                            <div class="file-type-info">
+                                <div class="file-type-name">PowerPoint</div>
+                                <div class="file-type-ext">.ppt, .pptx</div>
+                            </div>
+                        </div>
+                        
+                        <div class="file-type-item">
+                            <div class="file-type-icon text-secondary">
+                                <i class="fas fa-file-archive"></i>
+                            </div>
+                            <div class="file-type-info">
+                                <div class="file-type-name">Compactados</div>
+                                <div class="file-type-ext">.zip, .rar</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Os formatos não listados aqui podem não ser suportados pelo sistema.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Uploads Recentes -->
+            <div class="card shadow-sm upload-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-history me-2"></i> Uploads Recentes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="recent-uploads">
+                        {% if recent_uploads %}
+                            {% for doc in recent_uploads %}
+                                <div class="recent-item">
+                                    {% if doc.file_extension == '.pdf' %}
+                                        <div class="recent-icon text-danger">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </div>
+                                    {% elif doc.file_extension in ['.doc', '.docx'] %}
+                                        <div class="recent-icon text-primary">
+                                            <i class="fas fa-file-word"></i>
+                                        </div>
+                                    {% elif doc.file_extension in ['.xls', '.xlsx'] %}
+                                        <div class="recent-icon text-success">
+                                            <i class="fas fa-file-excel"></i>
+                                        </div>
+                                    {% elif doc.file_extension in ['.jpg', '.jpeg', '.png', '.gif'] %}
+                                        <div class="recent-icon text-warning">
+                                            <i class="fas fa-file-image"></i>
+                                        </div>
+                                    {% else %}
+                                        <div class="recent-icon text-secondary">
+                                            <i class="fas fa-file"></i>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="recent-info">
+                                        <div class="recent-name">{{ doc.title }}</div>
+                                        <div class="recent-meta">
+                                            <i class="fas fa-calendar-alt me-1"></i> {{ doc.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                        </div>
+                                    </div>
+                                    
+                                    <a href="{{ url_for('documents.view', document_id=doc.id) }}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted py-3">
+                                <i class="fas fa-file-upload fa-3x mb-3"></i>
+                                <p>Nenhum documento enviado recentemente.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ativar o link de documentos no menu
+        const navItems = document.querySelectorAll('.nav-item .nav-link');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const docsLink = document.querySelector('a[href="{{ url_for("documents.index") }}"]');
+        if (docsLink) {
+            docsLink.classList.add('active');
+        }
+        
+        // Elementos do formulário
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const filePreview = document.getElementById('filePreview');
+        const previewIcon = document.getElementById('previewIcon');
+        const previewName = document.getElementById('previewName');
+        const previewMeta = document.getElementById('previewMeta');
+        const clearFileBtn = document.getElementById('clearFileBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const progressSpeed = document.getElementById('progressSpeed');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const titleInput = document.getElementById('title');
+        
+        // Eventos de drag and drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropArea.classList.add('border-primary');
+            dropArea.style.backgroundColor = 'rgba(76, 175, 80, 0.05)';
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('border-primary');
+            dropArea.style.backgroundColor = '';
+        }
+        
+        // Manipular soltar arquivo
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFiles(files[0]);
+            }
+        }
+        
+        // Manipular mudança de arquivo via input
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                handleFiles(this.files[0]);
+            }
+        });
+        
+        // Função para lidar com o arquivo selecionado
+        function handleFiles(file) {
+            // Atualizar o preview
+            filePreview.style.display = 'block';
+            previewName.textContent = file.name;
+            
+            // Auto-preencher o título com o nome do arquivo (sem extensão)
+            const fileName = file.name.split('.').slice(0, -1).join('.');
+            if (!titleInput.value) {
+                titleInput.value = fileName;
+            }
+            
+            // Formatar o tamanho do arquivo
+            const fileSize = formatFileSize(file.size);
+            const fileType = getFileType(file.name);
+            previewMeta.textContent = `${fileType} • ${fileSize}`;
+            
+            // Atualizar o ícone baseado no tipo de arquivo
+            previewIcon.innerHTML = getFileIcon(file.name);
+        }
+        
+        // Botão para limpar o arquivo
+        clearFileBtn.addEventListener('click', function() {
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+        });
+        
+        // Envio do formulário
+        uploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!fileInput.files.length) {
+                alert('Por favor, selecione um arquivo para upload.');
+                return;
+            }
+            
+            const formData = new FormData(this);
+            
+            // Mostrar barra de progresso
+            uploadProgress.style.display = 'block';
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Enviando...';
+            
+            // Simular o progresso (no ambiente real, isso seria substituído por um XMLHttpRequest real)
+            let progress = 0;
+            const interval = setInterval(function() {
+                progress += 5;
+                if (progress > 100) {
+                    clearInterval(interval);
+                    
+                    // Redirecionar para a página de visualização após o envio
+                    setTimeout(function() {
+                        uploadForm.submit();
+                    }, 500);
+                    
+                    return;
+                }
+                
+                progressBar.style.width = progress + '%';
+                progressBar.setAttribute('aria-valuenow', progress);
+                progressText.textContent = progress + '%';
+                
+                // Simular velocidade
+                const speed = Math.floor(Math.random() * 500) + 500;
+                progressSpeed.textContent = formatFileSize(speed) + '/s';
+            }, 200);
+        });
+        
+        // Funções auxiliares
+        function formatFileSize(bytes) {
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            if (bytes === 0) return '0 Byte';
+            const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+            return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+        }
+        
+        function getFileType(filename) {
+            const extension = filename.split('.').pop().toLowerCase();
+            
+            const typeMap = {
+                'pdf': 'PDF',
+                'doc': 'Word',
+                'docx': 'Word',
+                'xls': 'Excel',
+                'xlsx': 'Excel',
+                'ppt': 'PowerPoint',
+                'pptx': 'PowerPoint',
+                'jpg': 'Imagem',
+                'jpeg': 'Imagem',
+                'png': 'Imagem',
+                'gif': 'Imagem',
+                'zip': 'Arquivo ZIP',
+                'rar': 'Arquivo RAR'
+            };
+            
+            return typeMap[extension] || extension.toUpperCase();
+        }
+        
+        function getFileIcon(filename) {
+            const extension = filename.split('.').pop().toLowerCase();
+            
+            const iconMap = {
+                'pdf': '<i class="fas fa-file-pdf text-danger"></i>',
+                'doc': '<i class="fas fa-file-word text-primary"></i>',
+                'docx': '<i class="fas fa-file-word text-primary"></i>',
+                'xls': '<i class="fas fa-file-excel text-success"></i>',
+                'xlsx': '<i class="fas fa-file-excel text-success"></i>',
+                'ppt': '<i class="fas fa-file-powerpoint text-warning"></i>',
+                'pptx': '<i class="fas fa-file-powerpoint text-warning"></i>',
+                'jpg': '<i class="fas fa-file-image text-info"></i>',
+                'jpeg': '<i class="fas fa-file-image text-info"></i>',
+                'png': '<i class="fas fa-file-image text-info"></i>',
+                'gif': '<i class="fas fa-file-image text-info"></i>',
+                'zip': '<i class="fas fa-file-archive text-secondary"></i>',
+                'rar': '<i class="fas fa-file-archive text-secondary"></i>'
+            };
+            
+            return iconMap[extension] || '<i class="fas fa-file text-secondary"></i>';
+        }
+    });
+</script>
+{% endblock %}

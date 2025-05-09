@@ -1,0 +1,803 @@
+{% extends 'base.html' %}
+
+{% block title %}Meu Perfil - Zelopack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-header {
+        background: linear-gradient(135deg, #3f51b5 0%, #303f9f 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .section-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-header p {
+        opacity: 0.85;
+        max-width: 80%;
+    }
+    
+    .profile-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .profile-card .card-header {
+        background-color: #f8f9fa;
+        border-bottom: none;
+        padding: 1.25rem;
+    }
+    
+    .profile-card .card-title {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .profile-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 1.5rem;
+        position: relative;
+    }
+    
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .profile-avatar .avatar-upload {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: #3f51b5;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease;
+    }
+    
+    .profile-avatar .avatar-upload:hover {
+        background-color: #303f9f;
+    }
+    
+    .profile-avatar input[type="file"] {
+        display: none;
+    }
+    
+    .profile-info {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .profile-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    
+    .profile-role {
+        display: inline-block;
+        padding: 0.35rem 0.65rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        background-color: rgba(63, 81, 181, 0.1);
+        color: #3f51b5;
+    }
+    
+    .profile-status {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .profile-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #3f51b5;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .details-section {
+        margin-bottom: 2rem;
+    }
+    
+    .details-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .details-item {
+        display: flex;
+        margin-bottom: 1rem;
+    }
+    
+    .details-label {
+        width: 120px;
+        font-weight: 500;
+        color: #6c757d;
+    }
+    
+    .details-value {
+        flex: 1;
+    }
+    
+    .activity-list {
+        margin-top: 1.5rem;
+    }
+    
+    .activity-item {
+        display: flex;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: rgba(63, 81, 181, 0.1);
+        color: #3f51b5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
+    
+    .activity-content {
+        flex: 1;
+    }
+    
+    .activity-title {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .activity-time {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .two-factor-status {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    
+    .two-factor-status .status-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
+    
+    .two-factor-status .status-icon.enabled {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .two-factor-status .status-icon.disabled {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .two-factor-status .status-content {
+        flex: 1;
+    }
+    
+    .status-title {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .status-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .qr-code-section {
+        text-align: center;
+        margin: 1.5rem 0;
+    }
+    
+    .qr-code-container {
+        display: inline-block;
+        padding: 1rem;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+    }
+    
+    .qr-code-description {
+        font-size: 0.9rem;
+        color: #6c757d;
+        max-width: 80%;
+        margin: 0 auto;
+    }
+    
+    .security-key {
+        font-family: monospace;
+        background-color: #f8f9fa;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+    
+    .session-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .session-item:last-child {
+        border-bottom: none;
+    }
+    
+    .session-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+    
+    .session-info {
+        flex: 1;
+    }
+    
+    .session-title {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .session-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .session-current {
+        background-color: rgba(63, 81, 181, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho da Seção -->
+    <div class="section-header mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-user-circle me-2"></i> Meu Perfil</h1>
+                <p class="mb-0">Visualize e edite as informações da sua conta.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <div class="btn-group">
+                    <a href="{{ url_for('auth.change_password') }}" class="btn btn-light">
+                        <i class="fas fa-key me-2"></i> Alterar Senha
+                    </a>
+                    {% if current_user.is_admin %}
+                        <a href="{{ url_for('auth.admin_security') }}" class="btn btn-light">
+                            <i class="fas fa-shield-alt me-2"></i> Segurança
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-4">
+            <!-- Perfil do Usuário -->
+            <div class="card shadow-sm profile-card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('auth.update_avatar') }}" enctype="multipart/form-data" id="avatarForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="profile-avatar">
+                            {% if current_user.avatar %}
+                                <img src="{{ url_for('auth.user_avatar', filename=current_user.avatar) }}" alt="Avatar do Usuário">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='img/default-avatar.png') }}" alt="Avatar do Usuário">
+                            {% endif %}
+                            
+                            <label for="avatarUpload" class="avatar-upload">
+                                <i class="fas fa-camera"></i>
+                                <input type="file" id="avatarUpload" name="avatar" accept="image/*">
+                            </label>
+                        </div>
+                    </form>
+                    
+                    <div class="profile-info">
+                        <div class="profile-name">{{ current_user.name }}</div>
+                        <div class="profile-role">
+                            {% if current_user.is_admin %}
+                                Administrador
+                            {% elif current_user.role == 'gestor' %}
+                                Gestor
+                            {% else %}
+                                Usuário
+                            {% endif %}
+                        </div>
+                        <div class="profile-status">
+                            <i class="fas fa-circle text-success me-1"></i> Online agora
+                        </div>
+                    </div>
+                    
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ stats.days }}</div>
+                            <div class="stat-label">Dias</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ stats.documents }}</div>
+                            <div class="stat-label">Documentos</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ stats.activities }}</div>
+                            <div class="stat-label">Atividades</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="fas fa-edit me-2"></i> Editar Perfil
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Autenticação de Dois Fatores -->
+            <div class="card shadow-sm profile-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-shield-alt me-2"></i> Autenticação de Dois Fatores</h5>
+                </div>
+                <div class="card-body">
+                    <div class="two-factor-status">
+                        {% if two_factor.enabled %}
+                            <div class="status-icon enabled">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="status-content">
+                                <div class="status-title">Ativada</div>
+                                <div class="status-description">Sua conta está protegida pela autenticação de dois fatores.</div>
+                            </div>
+                        {% else %}
+                            <div class="status-icon disabled">
+                                <i class="fas fa-times"></i>
+                            </div>
+                            <div class="status-content">
+                                <div class="status-title">Desativada</div>
+                                <div class="status-description">Sua conta não está usando autenticação de dois fatores.</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if two_factor.enabled %}
+                        <form method="POST" action="{{ url_for('auth.disable_two_factor') }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-shield-alt me-2"></i> Desativar Autenticação de Dois Fatores
+                            </button>
+                        </form>
+                    {% else %}
+                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#twoFactorModal">
+                            <i class="fas fa-shield-alt me-2"></i> Ativar Autenticação de Dois Fatores
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Sessões Ativas -->
+            <div class="card shadow-sm profile-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title"><i class="fas fa-laptop me-2"></i> Sessões Ativas</h5>
+                    <button class="btn btn-sm btn-outline-secondary" id="refreshSessionsBtn">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if sessions %}
+                        {% for session in sessions %}
+                            <div class="session-item {{ 'session-current' if session.is_current else '' }}">
+                                <div class="session-icon">
+                                    {% if 'Windows' in session.user_agent %}
+                                        <i class="fab fa-windows"></i>
+                                    {% elif 'Mac' in session.user_agent %}
+                                        <i class="fab fa-apple"></i>
+                                    {% elif 'Linux' in session.user_agent %}
+                                        <i class="fab fa-linux"></i>
+                                    {% elif 'Android' in session.user_agent %}
+                                        <i class="fab fa-android"></i>
+                                    {% elif 'iPhone' in session.user_agent or 'iPad' in session.user_agent %}
+                                        <i class="fab fa-apple"></i>
+                                    {% else %}
+                                        <i class="fas fa-globe"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="session-info">
+                                    <div class="session-title">
+                                        {% if 'Chrome' in session.user_agent %}
+                                            Chrome
+                                        {% elif 'Firefox' in session.user_agent %}
+                                            Firefox
+                                        {% elif 'Safari' in session.user_agent %}
+                                            Safari
+                                        {% elif 'Edge' in session.user_agent %}
+                                            Edge
+                                        {% elif 'MSIE' in session.user_agent or 'Trident' in session.user_agent %}
+                                            Internet Explorer
+                                        {% else %}
+                                            Navegador
+                                        {% endif %}
+                                        {% if session.is_current %}
+                                            <span class="badge bg-primary">Atual</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="session-meta">
+                                        <div><i class="fas fa-map-marker-alt me-1"></i> {{ session.ip_address }}</div>
+                                        <div><i class="fas fa-clock me-1"></i> {{ session.last_activity }}</div>
+                                    </div>
+                                </div>
+                                
+                                {% if not session.is_current %}
+                                    <form method="POST" action="{{ url_for('auth.terminate_session') }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="session_id" value="{{ session.id }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Você não tem outras sessões ativas.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <!-- Detalhes do Perfil -->
+            <div class="card shadow-sm profile-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-info-circle me-2"></i> Informações da Conta</h5>
+                </div>
+                <div class="card-body">
+                    <div class="details-section">
+                        <div class="details-title">Dados Pessoais</div>
+                        
+                        <div class="details-item">
+                            <div class="details-label">Nome</div>
+                            <div class="details-value">{{ current_user.name }}</div>
+                        </div>
+                        
+                        <div class="details-item">
+                            <div class="details-label">E-mail</div>
+                            <div class="details-value">{{ current_user.email }}</div>
+                        </div>
+                        
+                        <div class="details-item">
+                            <div class="details-label">Usuário</div>
+                            <div class="details-value">{{ current_user.username }}</div>
+                        </div>
+                        
+                        <div class="details-item">
+                            <div class="details-label">Departamento</div>
+                            <div class="details-value">{{ current_user.department or 'Não definido' }}</div>
+                        </div>
+                        
+                        <div class="details-item">
+                            <div class="details-label">Cargo</div>
+                            <div class="details-value">{{ current_user.job_title or 'Não definido' }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="details-section">
+                        <div class="details-title">Dados da Conta</div>
+                        
+                        <div class="details-item">
+                            <div class="details-label">Status</div>
+                            <div class="details-value">
+                                {% if current_user.is_active %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inativo</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="details-item">
+                            <div class="details-label">Função</div>
+                            <div class="details-value">
+                                {% if current_user.is_admin %}
+                                    <span class="badge bg-danger">Administrador</span>
+                                {% elif current_user.role == 'gestor' %}
+                                    <span class="badge bg-primary">Gestor</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Usuário</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="details-item">
+                            <div class="details-label">Cadastrado em</div>
+                            <div class="details-value">{{ current_user.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                        </div>
+                        
+                        <div class="details-item">
+                            <div class="details-label">Último login</div>
+                            <div class="details-value">{{ current_user.last_login.strftime('%d/%m/%Y %H:%M') if current_user.last_login else 'Nunca' }}</div>
+                        </div>
+                        
+                        <div class="details-item">
+                            <div class="details-label">Permissões</div>
+                            <div class="details-value">
+                                {% for permission in permissions %}
+                                    <span class="badge bg-info me-1 mb-1">{{ permission }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Atividades Recentes -->
+            <div class="card shadow-sm profile-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title"><i class="fas fa-history me-2"></i> Atividades Recentes</h5>
+                    <a href="{{ url_for('auth.view_activities') }}" class="btn btn-sm btn-outline-secondary">
+                        Ver Todas
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if activities %}
+                        <div class="activity-list">
+                            {% for activity in activities %}
+                                <div class="activity-item">
+                                    <div class="activity-icon">
+                                        {% if activity.action == 'login' %}
+                                            <i class="fas fa-sign-in-alt"></i>
+                                        {% elif activity.action == 'logout' %}
+                                            <i class="fas fa-sign-out-alt"></i>
+                                        {% elif activity.action == 'password_change' %}
+                                            <i class="fas fa-key"></i>
+                                        {% elif activity.action == 'profile_update' %}
+                                            <i class="fas fa-user-edit"></i>
+                                        {% elif activity.action == 'document_view' %}
+                                            <i class="fas fa-file"></i>
+                                        {% elif activity.action == 'document_upload' %}
+                                            <i class="fas fa-upload"></i>
+                                        {% elif activity.action == 'form_submit' %}
+                                            <i class="fas fa-paper-plane"></i>
+                                        {% else %}
+                                            <i class="fas fa-cog"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">{{ activity.description }}</div>
+                                        <div class="activity-time">
+                                            <i class="fas fa-clock me-1"></i> {{ activity.timestamp.strftime('%d/%m/%Y %H:%M') }}
+                                            <i class="fas fa-map-marker-alt ms-2 me-1"></i> {{ activity.ip_address }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Nenhuma atividade recente registrada.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edição de Perfil -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">Editar Perfil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('auth.update_profile') }}" id="profileForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome Completo</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ current_user.name }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="department" class="form-label">Departamento</label>
+                        <input type="text" class="form-control" id="department" name="department" value="{{ current_user.department or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="job_title" class="form-label">Cargo</label>
+                        <input type="text" class="form-control" id="job_title" name="job_title" value="{{ current_user.job_title or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Telefone</label>
+                        <input type="text" class="form-control" id="phone" name="phone" value="{{ current_user.phone or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">Sobre Mim</label>
+                        <textarea class="form-control" id="bio" name="bio" rows="3">{{ current_user.bio or '' }}</textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="saveProfileBtn">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Autenticação de Dois Fatores -->
+<div class="modal fade" id="twoFactorModal" tabindex="-1" aria-labelledby="twoFactorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="twoFactorModalLabel">Ativar Autenticação de Dois Fatores</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>A autenticação de dois fatores (2FA) adiciona uma camada extra de segurança à sua conta.</p>
+                
+                <div class="qr-code-section">
+                    <div class="qr-code-container">
+                        <img src="{{ qr_code_url }}" alt="QR Code para 2FA">
+                    </div>
+                    <p class="qr-code-description">Escaneie este código QR com o aplicativo Google Authenticator ou similar em seu smartphone.</p>
+                </div>
+                
+                <div class="text-center mb-3">
+                    <div class="security-key">{{ secret_key }}</div>
+                    <p class="qr-code-description">Alternativamente, você pode inserir manualmente esta chave no aplicativo.</p>
+                </div>
+                
+                <form method="POST" action="{{ url_for('auth.enable_two_factor') }}" id="twoFactorForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="secret_key" value="{{ secret_key }}">
+                    
+                    <div class="mb-3">
+                        <label for="verification_code" class="form-label">Código de Verificação</label>
+                        <input type="text" class="form-control" id="verification_code" name="verification_code" required placeholder="Insira o código do aplicativo">
+                        <div class="form-text">Digite o código de 6 dígitos exibido no seu aplicativo de autenticação.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="enableTwoFactorBtn">Ativar 2FA</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ativar o link de perfil no menu
+        const navItems = document.querySelectorAll('.nav-item .nav-link');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const profileLink = document.querySelector('a[href="{{ url_for("auth.profile") }}"]');
+        if (profileLink) {
+            profileLink.classList.add('active');
+        }
+        
+        // Upload de avatar
+        const avatarUpload = document.getElementById('avatarUpload');
+        
+        if (avatarUpload) {
+            avatarUpload.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const form = document.getElementById('avatarForm');
+                    form.submit();
+                }
+            });
+        }
+        
+        // Editar perfil
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        
+        if (saveProfileBtn) {
+            saveProfileBtn.addEventListener('click', function() {
+                const form = document.getElementById('profileForm');
+                form.submit();
+            });
+        }
+        
+        // Ativar autenticação de dois fatores
+        const enableTwoFactorBtn = document.getElementById('enableTwoFactorBtn');
+        
+        if (enableTwoFactorBtn) {
+            enableTwoFactorBtn.addEventListener('click', function() {
+                const form = document.getElementById('twoFactorForm');
+                form.submit();
+            });
+        }
+        
+        // Atualizar sessões
+        const refreshSessionsBtn = document.getElementById('refreshSessionsBtn');
+        
+        if (refreshSessionsBtn) {
+            refreshSessionsBtn.addEventListener('click', function() {
+                window.location.reload();
+            });
+        }
+    });
+</script>
+{% endblock %}
