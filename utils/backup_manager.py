@@ -450,7 +450,7 @@ class BackupManager:
                                     values.append(str(val))
                                 else:
                                     # Escapar strings
-                                    values.append(f"'{str(val).replace(''', ''''''')}'")
+                                    values.append(f"'{str(val).replace(\"'\", \"''\")}'")
                             
                             f.write(f"INSERT INTO {table} ({', '.join(colnames)}) VALUES ({', '.join(values)});\n")
             
