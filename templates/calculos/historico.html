@@ -1,0 +1,656 @@
+{% extends 'base.html' %}
+
+{% block title %}Histórico de Cálculos - Zelopack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-header {
+        background: linear-gradient(135deg, #ff5722 0%, #e64a19 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .section-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-header p {
+        opacity: 0.85;
+        max-width: 80%;
+    }
+    
+    .history-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .history-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .history-card .card-header {
+        background-color: #f8f9fa;
+        border-bottom: none;
+        padding: 1.25rem;
+    }
+    
+    .history-card .card-title {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .history-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .filter-item {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .calculation-item {
+        position: relative;
+        padding: 1.25rem;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        margin-bottom: 1rem;
+        transition: background-color 0.3s ease;
+    }
+    
+    .calculation-item:hover {
+        background-color: #e9ecef;
+    }
+    
+    .calculation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .calculation-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .calculation-meta {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    
+    .calculation-badges {
+        margin-bottom: 0.75rem;
+    }
+    
+    .calculation-badge {
+        display: inline-block;
+        padding: 0.35rem 0.65rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .calculation-badge-type {
+        background-color: rgba(255, 87, 34, 0.1);
+        color: #ff5722;
+    }
+    
+    .calculation-badge-status {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .calculation-badge-pending {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+    
+    .calculation-badge-error {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .calculation-data {
+        margin-top: 1rem;
+        background-color: rgba(0, 0, 0, 0.03);
+        border-radius: 6px;
+        padding: 1rem;
+    }
+    
+    .data-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .data-label {
+        width: 40%;
+        min-width: 150px;
+        color: #495057;
+        font-weight: 500;
+    }
+    
+    .data-value {
+        flex: 1;
+    }
+    
+    .action-buttons {
+        margin-top: 1rem;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 3rem 0;
+    }
+    
+    .no-results-icon {
+        font-size: 4rem;
+        color: #e9ecef;
+        margin-bottom: 1rem;
+    }
+    
+    .no-results-text {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+    
+    .chart-container {
+        width: 100%;
+        height: 300px;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho da Seção -->
+    <div class="section-header mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-history me-2"></i> Histórico de Cálculos</h1>
+                <p class="mb-0">Visualize o histórico de cálculos realizados no sistema.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <div class="btn-group">
+                    <a href="{{ url_for('calculos.index') }}" class="btn btn-light">
+                        <i class="fas fa-calculator me-2"></i> Calculadora
+                    </a>
+                    <a href="{{ url_for('calculos.historico') }}" class="btn btn-primary">
+                        <i class="fas fa-history me-2"></i> Histórico
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3"><i class="fas fa-filter me-2"></i> Filtros</h5>
+            <form method="get" action="{{ url_for('calculos.historico') }}">
+                <div class="filter-bar">
+                    <div class="filter-item">
+                        <label for="start-date" class="form-label">Data Inicial</label>
+                        <input type="date" class="form-control" id="start-date" name="start_date" value="{{ request.args.get('start_date', '') }}">
+                    </div>
+                    <div class="filter-item">
+                        <label for="end-date" class="form-label">Data Final</label>
+                        <input type="date" class="form-control" id="end-date" name="end_date" value="{{ request.args.get('end_date', '') }}">
+                    </div>
+                    <div class="filter-item">
+                        <label for="type-filter" class="form-label">Tipo de Cálculo</label>
+                        <select class="form-select" id="type-filter" name="type">
+                            <option value="">Todos os Tipos</option>
+                            <option value="technical" {% if request.args.get('type') == 'technical' %}selected{% endif %}>Technical</option>
+                            <option value="abas" {% if request.args.get('type') == 'abas' %}selected{% endif %}>ABAS</option>
+                            <option value="tempo" {% if request.args.get('type') == 'tempo' %}selected{% endif %}>Tempo</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="status-filter" class="form-label">Status</label>
+                        <select class="form-select" id="status-filter" name="status">
+                            <option value="">Todos os Status</option>
+                            <option value="concluido" {% if request.args.get('status') == 'concluido' %}selected{% endif %}>Concluído</option>
+                            <option value="pendente" {% if request.args.get('status') == 'pendente' %}selected{% endif %}>Pendente</option>
+                            <option value="erro" {% if request.args.get('status') == 'erro' %}selected{% endif %}>Erro</option>
+                        </select>
+                    </div>
+                    <div class="filter-item d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i> Aplicar Filtros
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <!-- Gráfico de Tipos de Cálculo -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm history-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-chart-pie me-2"></i> Distribuição por Tipo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="typeDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gráfico de Cálculos por Dia -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm history-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-chart-line me-2"></i> Cálculos por Período</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="timeSeriesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lista de Cálculos -->
+    <div class="card shadow-sm history-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i> Histórico de Cálculos</h5>
+            <button class="btn btn-sm btn-outline-secondary" id="export-history">
+                <i class="fas fa-download me-2"></i> Exportar
+            </button>
+        </div>
+        <div class="card-body">
+            {% if calculations %}
+                {% for calc in calculations %}
+                    <div class="calculation-item">
+                        <div class="calculation-header">
+                            <div>
+                                <div class="calculation-title">{{ calc.title }}</div>
+                                <div class="calculation-meta">
+                                    <span><i class="fas fa-user me-1"></i> {{ calc.user_name }}</span>
+                                    <span class="mx-2">•</span>
+                                    <span><i class="fas fa-calendar me-1"></i> {{ calc.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="{{ url_for('calculos.view_calculation', calc_id=calc.id) }}"><i class="fas fa-eye me-2"></i> Visualizar</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('calculos.recalculate', calc_id=calc.id) }}"><i class="fas fa-redo me-2"></i> Recalcular</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" data-calc-id="{{ calc.id }}"><i class="fas fa-trash me-2"></i> Excluir</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="calculation-badges">
+                            <span class="calculation-badge calculation-badge-type">{{ calc.type }}</span>
+                            
+                            {% if calc.status == 'concluido' %}
+                                <span class="calculation-badge calculation-badge-status">Concluído</span>
+                            {% elif calc.status == 'pendente' %}
+                                <span class="calculation-badge calculation-badge-pending">Pendente</span>
+                            {% elif calc.status == 'erro' %}
+                                <span class="calculation-badge calculation-badge-error">Erro</span>
+                            {% endif %}
+                            
+                            {% if calc.is_verified %}
+                                <span class="calculation-badge" style="background-color: rgba(13, 110, 253, 0.1); color: #0d6efd;">Verificado</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="calculation-data">
+                            {% if calc.type == 'technical' %}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="data-row">
+                                            <div class="data-label">Número da OP:</div>
+                                            <div class="data-value">{{ calc.data.op_number }}</div>
+                                        </div>
+                                        <div class="data-row">
+                                            <div class="data-label">Produto:</div>
+                                            <div class="data-value">{{ calc.data.product }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="data-row">
+                                            <div class="data-label">Quantidade:</div>
+                                            <div class="data-value">{{ calc.data.quantity }} {{ calc.data.unit }}</div>
+                                        </div>
+                                        <div class="data-row">
+                                            <div class="data-label">Resultado:</div>
+                                            <div class="data-value">{{ calc.result }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif calc.type == 'abas' %}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="data-row">
+                                            <div class="data-label">Componente:</div>
+                                            <div class="data-value">{{ calc.data.component }}</div>
+                                        </div>
+                                        <div class="data-row">
+                                            <div class="data-label">Modelo:</div>
+                                            <div class="data-value">{{ calc.data.model }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="data-row">
+                                            <div class="data-label">Parâmetros:</div>
+                                            <div class="data-value">{{ calc.data.parameters }}</div>
+                                        </div>
+                                        <div class="data-row">
+                                            <div class="data-label">Resultado:</div>
+                                            <div class="data-value">{{ calc.result }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif calc.type == 'tempo' %}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="data-row">
+                                            <div class="data-label">Processo:</div>
+                                            <div class="data-value">{{ calc.data.process }}</div>
+                                        </div>
+                                        <div class="data-row">
+                                            <div class="data-label">Operador:</div>
+                                            <div class="data-value">{{ calc.data.operator }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="data-row">
+                                            <div class="data-label">Turno:</div>
+                                            <div class="data-value">{{ calc.data.shift }}</div>
+                                        </div>
+                                        <div class="data-row">
+                                            <div class="data-label">Resultado:</div>
+                                            <div class="data-value">{{ calc.result }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle me-2"></i> Detalhes não disponíveis para este tipo de cálculo.
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <a href="{{ url_for('calculos.view_calculation', calc_id=calc.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-2"></i> Visualizar Detalhes
+                            </a>
+                            <a href="{{ url_for('calculos.recalculate', calc_id=calc.id) }}" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-redo me-2"></i> Recalcular
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+                
+                <!-- Paginação -->
+                <div class="d-flex justify-content-center mt-4">
+                    <nav aria-label="Navegação de página do histórico">
+                        <ul class="pagination">
+                            {% if pagination.page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('calculos.historico', page=pagination.page-1, **request.args) }}">Anterior</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Anterior</span>
+                                </li>
+                            {% endif %}
+                            
+                            {% for p in range(1, pagination.pages + 1) %}
+                                <li class="page-item {{ 'active' if p == pagination.page else '' }}">
+                                    <a class="page-link" href="{{ url_for('calculos.historico', page=p, **request.args) }}">{{ p }}</a>
+                                </li>
+                            {% endfor %}
+                            
+                            {% if pagination.page < pagination.pages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('calculos.historico', page=pagination.page+1, **request.args) }}">Próxima</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Próxima</span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% else %}
+                <div class="no-results">
+                    <div class="no-results-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h4>Nenhum cálculo encontrado</h4>
+                    <p class="no-results-text">Não foram encontrados cálculos com os filtros selecionados.</p>
+                    <a href="{{ url_for('calculos.index') }}" class="btn btn-primary">
+                        <i class="fas fa-calculator me-2"></i> Ir para Calculadora
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir este cálculo? Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="#" id="confirmDelete" class="btn btn-danger">Excluir</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ativar o link de Cálculos no menu
+        const navItems = document.querySelectorAll('.nav-item .nav-link');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const calcLink = document.querySelector('a[href="{{ url_for("calculos.index") }}"]');
+        if (calcLink) {
+            calcLink.classList.add('active');
+        }
+        
+        // Configurar o modal de exclusão
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const calcId = button.getAttribute('data-calc-id');
+                const confirmDeleteButton = document.getElementById('confirmDelete');
+                confirmDeleteButton.href = "{{ url_for('calculos.delete_calculation', calc_id=0) }}".replace('0', calcId);
+            });
+        }
+        
+        // Configurar data inicial e final para os últimos 30 dias se não estiverem definidos
+        const startDateInput = document.getElementById('start-date');
+        const endDateInput = document.getElementById('end-date');
+        
+        if (startDateInput && endDateInput) {
+            if (!startDateInput.value) {
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                startDateInput.valueAsDate = thirtyDaysAgo;
+            }
+            
+            if (!endDateInput.value) {
+                endDateInput.valueAsDate = new Date();
+            }
+        }
+        
+        // Exportar histórico
+        document.getElementById('export-history')?.addEventListener('click', function() {
+            // Implementar exportação do histórico
+            alert('Exportação iniciada. O arquivo será baixado em instantes.');
+            
+            // Criar e baixar um arquivo CSV
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // Adicionar cabeçalho
+            const headers = ["Data", "Tipo", "Título", "Usuário", "Status", "Resultado"];
+            csvContent += headers.join(",") + "\n";
+            
+            // Adicionar linhas dos cálculos
+            document.querySelectorAll('.calculation-item').forEach(item => {
+                const date = item.querySelector('.calculation-meta span:nth-child(3)').textContent.replace('•', '').trim();
+                const title = item.querySelector('.calculation-title').textContent.trim();
+                const user = item.querySelector('.calculation-meta span:first-child').textContent.trim();
+                
+                // Obter tipo e status das badges
+                const badges = item.querySelectorAll('.calculation-badge');
+                let type = "";
+                let status = "";
+                
+                badges.forEach(badge => {
+                    if (badge.classList.contains('calculation-badge-type')) {
+                        type = badge.textContent.trim();
+                    } else if (badge.classList.contains('calculation-badge-status')) {
+                        status = "Concluído";
+                    } else if (badge.classList.contains('calculation-badge-pending')) {
+                        status = "Pendente";
+                    } else if (badge.classList.contains('calculation-badge-error')) {
+                        status = "Erro";
+                    }
+                });
+                
+                // Obter resultado
+                const result = item.querySelector('.data-row:last-child .data-value').textContent.trim();
+                
+                // Formatar os dados para CSV
+                const rowData = [
+                    `"${date}"`,
+                    `"${type}"`,
+                    `"${title.replace(/"/g, '""')}"`,
+                    `"${user.replace(/"/g, '""')}"`,
+                    `"${status}"`,
+                    `"${result.replace(/"/g, '""')}"`
+                ];
+                
+                csvContent += rowData.join(",") + "\n";
+            });
+            
+            // Criar link de download
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "historico_calculos.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+        
+        // Configurar gráficos
+        const typeDistributionData = {
+            labels: ['Technical', 'ABAS', 'Tempo', 'Outros'],
+            datasets: [{
+                data: [
+                    {{ stats.type_distribution.technical if stats.type_distribution and stats.type_distribution.technical else 0 }},
+                    {{ stats.type_distribution.abas if stats.type_distribution and stats.type_distribution.abas else 0 }},
+                    {{ stats.type_distribution.tempo if stats.type_distribution and stats.type_distribution.tempo else 0 }},
+                    {{ stats.type_distribution.other if stats.type_distribution and stats.type_distribution.other else 0 }}
+                ],
+                backgroundColor: [
+                    'rgba(255, 87, 34, 0.7)',
+                    'rgba(13, 110, 253, 0.7)',
+                    'rgba(25, 135, 84, 0.7)',
+                    'rgba(108, 117, 125, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        };
+        
+        const timeSeriesData = {
+            labels: {{ stats.time_series.labels|tojson if stats.time_series and stats.time_series.labels else "[]" }},
+            datasets: [{
+                label: 'Cálculos',
+                data: {{ stats.time_series.values|tojson if stats.time_series and stats.time_series.values else "[]" }},
+                borderColor: '#ff5722',
+                backgroundColor: 'rgba(255, 87, 34, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        };
+        
+        // Configurações comuns para gráficos
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        };
+        
+        // Criar gráficos se os elementos existirem
+        const typeDistributionChart = document.getElementById('typeDistributionChart');
+        if (typeDistributionChart) {
+            new Chart(typeDistributionChart, {
+                type: 'pie',
+                data: typeDistributionData,
+                options: commonOptions
+            });
+        }
+        
+        const timeSeriesChart = document.getElementById('timeSeriesChart');
+        if (timeSeriesChart) {
+            new Chart(timeSeriesChart, {
+                type: 'line',
+                data: timeSeriesData,
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
