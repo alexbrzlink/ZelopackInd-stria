@@ -1,0 +1,1423 @@
+{% extends 'base.html' %}
+
+{% block title %}Cálculos Técnicos Avançados - Zelopack{% endblock %}
+
+{% block styles %}
+<style>
+    /* Estilos modernos e interativos */
+    :root {
+        --primary: #0088cc;
+        --secondary: #17a2b8;
+        --success: #28a745;
+        --info: #17a2b8;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --light: #f8f9fa;
+        --dark: #343a40;
+        --white: #ffffff;
+        --gray: #6c757d;
+        --gray-dark: #343a40;
+        --gray-light: #e9ecef;
+    }
+    
+    body {
+        font-family: 'Poppins', 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    .card-calc {
+        transition: all 0.3s ease;
+        margin-bottom: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border: none;
+        border-radius: 8px;
+    }
+    
+    .card-calc:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    
+    .card-header {
+        background-color: var(--white);
+        border-bottom: 2px solid rgba(0,136,204,0.2);
+        font-weight: 600;
+        padding: 20px;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .card-body {
+        padding: 25px;
+    }
+    
+    .form-control {
+        border-radius: 6px;
+        padding: 10px 15px;
+        border: 1px solid #dce1e8;
+        box-shadow: none;
+        height: auto;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0,136,204,0.15);
+    }
+    
+    .form-select {
+        border-radius: 6px;
+        padding: 10px 30px 10px 15px;
+        height: auto;
+        border: 1px solid #dce1e8;
+        background-position: right 15px center;
+        cursor: pointer;
+    }
+    
+    .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0,136,204,0.15);
+    }
+    
+    .btn-calculate {
+        background: linear-gradient(135deg, var(--primary), #00a2e8);
+        color: white;
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 10px rgba(0,136,204,0.2);
+    }
+    
+    .btn-calculate:hover {
+        background: linear-gradient(135deg, #0099e6, #00b3ff);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,136,204,0.25);
+    }
+    
+    .btn-secondary {
+        background-color: var(--light);
+        color: var(--dark);
+        border: 1px solid #dce1e8;
+        font-weight: 500;
+        padding: 10px 20px;
+        border-radius: 6px;
+        transition: all 0.3s;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #e9ecef;
+    }
+    
+    .result-box {
+        background-color: var(--white);
+        border-left: 4px solid var(--success);
+        padding: 20px;
+        margin-top: 25px;
+        border-radius: 8px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+    }
+    
+    .result-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .result-item {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .result-label {
+        font-weight: 500;
+        color: var(--gray);
+    }
+    
+    .result-value {
+        font-weight: 700;
+        color: var(--success);
+        font-size: 1.1rem;
+    }
+    
+    .input-with-unit {
+        position: relative;
+    }
+    
+    .input-unit {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray);
+        font-weight: 500;
+        font-size: 0.9rem;
+        pointer-events: none;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-text {
+        margin-top: 5px;
+        font-size: 0.85rem;
+        color: var(--gray);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--dark);
+        display: block;
+    }
+    
+    .formula-box {
+        background: linear-gradient(135deg, #f0f5ff, #e6f3ff);
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        font-family: 'Fira Code', 'Courier New', monospace;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,136,204,0.1);
+    }
+    
+    .formula-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+        color: var(--primary);
+    }
+    
+    .search-box .input-group {
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .calculation-icons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .calc-icon {
+        display: flex;
+        align-items: center;
+        background-color: var(--white);
+        border: 1px solid #dce1e8;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    
+    .calc-icon:hover {
+        background-color: #f7f9fc;
+        border-color: #c3ccd7;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    
+    .calc-icon i {
+        margin-right: 8px;
+        color: var(--primary);
+    }
+    
+    .calc-icon.active {
+        background-color: rgba(0,136,204,0.08);
+        border-color: var(--primary);
+        font-weight: 600;
+        color: var(--primary);
+    }
+    
+    #calculatorContainer {
+        margin-top: 25px;
+        transition: all 0.3s ease;
+    }
+    
+    .calculator-header {
+        font-weight: 700;
+        font-size: 1.15rem;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid rgba(0,0,0,0.06);
+        color: var(--primary);
+    }
+    
+    .calculator-description {
+        color: var(--gray);
+        font-size: 0.95rem;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+    
+    .progress {
+        height: 24px;
+        border-radius: 12px;
+        background-color: #e9ecef;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .progress-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: white;
+        transition: width 0.6s ease;
+        background: linear-gradient(135deg, #28a745, #20c997);
+    }
+    
+    /* Relógio digital estilizado */
+    .digital-clock {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+    
+    .clock-container {
+        text-align: center;
+        background-color: white;
+        padding: 10px 15px;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin: 0 10px;
+    }
+    
+    .clock-time {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--dark);
+        font-family: 'Fira Code', monospace;
+        margin-bottom: 3px;
+    }
+    
+    .clock-label {
+        font-size: 0.8rem;
+        color: var(--gray);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .clock-arrow {
+        font-size: 1.5rem;
+        color: var(--primary);
+        margin: 0 5px;
+    }
+    
+    /* Animação de loading para o botão calcular */
+    @keyframes spinner {
+        to {transform: rotate(360deg);}
+    }
+    
+    .loader {
+        display: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid transparent;
+        border-top-color: white;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: spinner 0.8s linear infinite;
+    }
+    
+    .loading .loader {
+        display: inline-block;
+    }
+    
+    /* Estilo para campos com tooltips/descrições */
+    .field-tooltip {
+        position: relative;
+    }
+    
+    .field-tooltip .tooltip-icon {
+        position: absolute;
+        right: -25px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary);
+        opacity: 0.7;
+        cursor: help;
+        font-size: 0.9rem;
+    }
+    
+    .field-tooltip:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+    
+    .tooltip-text {
+        visibility: hidden;
+        position: absolute;
+        bottom: calc(100% + 5px);
+        left: 0;
+        width: 100%;
+        background-color: rgba(0,0,0,0.8);
+        color: white;
+        text-align: center;
+        border-radius: 4px;
+        padding: 5px 10px;
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.85rem;
+    }
+    
+    .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 15%;
+        border-width: 5px;
+        border-style: solid;
+        border-color: rgba(0,0,0,0.8) transparent transparent transparent;
+    }
+    
+    /* Animação para resultados */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translate3d(0, 10px, 0);
+        }
+        to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+    }
+    
+    .fade-in-up {
+        animation: fadeInUp 0.5s ease forwards;
+    }
+    
+    .live-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: var(--success);
+        border-radius: 50%;
+        margin-right: 5px;
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 5px rgba(40, 167, 69, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2 class="mb-3"><i class="fas fa-calculator"></i> Cálculos Técnicos Avançados</h2>
+    
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="d-flex align-items-center">
+                <div class="input-group">
+                    <span class="input-group-text bg-light">
+                        <i class="fas fa-calculator me-2"></i>
+                        Calculadora Técnica (29 cálculos)
+                    </span>
+                    <input type="text" class="form-control" id="searchCalc" placeholder="Buscar cálculo...">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ícones de cálculos -->
+    <div class="calculation-icons">
+        <div class="calc-icon" data-calc="producao_final">
+            <i class="fas fa-industry"></i> Produção Final
+        </div>
+        <div class="calc-icon" data-calc="producao_litro">
+            <i class="fas fa-tint"></i> Produção (Litro)
+        </div>
+        <div class="calc-icon" data-calc="abaixar_brix">
+            <i class="fas fa-water"></i> Abaixar Brix
+        </div>
+        <div class="calc-icon" data-calc="brix_corrigido">
+            <i class="fas fa-thermometer-half"></i> Brix Corrigido
+        </div>
+        <div class="calc-icon" data-calc="peso_bruto">
+            <i class="fas fa-weight-hanging"></i> Peso Bruto
+        </div>
+        <div class="calc-icon" data-calc="corantes">
+            <i class="fas fa-fill-drip"></i> Corantes
+        </div>
+        <div class="calc-icon" data-calc="densidade">
+            <i class="fas fa-vial"></i> Densidade
+        </div>
+        <div class="calc-icon" data-calc="ratio">
+            <i class="fas fa-balance-scale"></i> Ratio
+        </div>
+        <div class="calc-icon" data-calc="ratio_brix">
+            <i class="fas fa-calculator"></i> Ratio - Brix
+        </div>
+        <div class="calc-icon" data-calc="ratio_acidez">
+            <i class="fas fa-flask"></i> Ratio - Acidez
+        </div>
+        <div class="calc-icon" data-calc="acidez">
+            <i class="fas fa-burn"></i> Acidez (%)
+        </div>
+        <div class="calc-icon" data-calc="soda">
+            <i class="fas fa-prescription-bottle"></i> Cálculo de Soda
+        </div>
+        <div class="calc-icon" data-calc="vitamina_c">
+            <i class="fas fa-tablets"></i> Vitamina C
+        </div>
+        <div class="calc-icon" data-calc="soda_diversey">
+            <i class="fas fa-prescription-bottle-alt"></i> Soda-Diversey
+        </div>
+        <div class="calc-icon" data-calc="acido_diversey">
+            <i class="fas fa-vial"></i> Ácido-Diversey
+        </div>
+        <div class="calc-icon" data-calc="perda_base">
+            <i class="fas fa-percent"></i> Perda de Base
+        </div>
+        <div class="calc-icon" data-calc="acucar_puxar">
+            <i class="fas fa-cubes"></i> Açúcar a Puxar
+        </div>
+        <div class="calc-icon" data-calc="acucar_batido">
+            <i class="fas fa-candy-cane"></i> Açúcar Batido
+        </div>
+        <div class="calc-icon" data-calc="previsao_brix">
+            <i class="fas fa-chart-line"></i> Previsão Brix
+        </div>
+        <div class="calc-icon" data-calc="previsao_acidez">
+            <i class="fas fa-chart-bar"></i> Previsão Acidez
+        </div>
+        <div class="calc-icon active" data-calc="tempo_finalizacao">
+            <i class="fas fa-clock"></i> Tempo Finalização
+        </div>
+        <div class="calc-icon" data-calc="aumentar_acidez">
+            <i class="fas fa-arrow-up"></i> Aumentar Acidez
+        </div>
+        <div class="calc-icon" data-calc="diminuir_acidez">
+            <i class="fas fa-arrow-down"></i> Diminuir Acidez
+        </div>
+        <div class="calc-icon" data-calc="correcao_brix">
+            <i class="fas fa-prescription"></i> Correção de Brix
+        </div>
+        <div class="calc-icon" data-calc="cristal_liquido">
+            <i class="fas fa-exchange-alt"></i> Cristal → Líquido
+        </div>
+        <div class="calc-icon" data-calc="correcao_acucar">
+            <i class="fas fa-edit"></i> Correção Açúcar
+        </div>
+        <div class="calc-icon" data-calc="liquido_cristal">
+            <i class="fas fa-exchange-alt"></i> Líquido → Cristal
+        </div>
+        <div class="calc-icon" data-calc="peso_liquido_200">
+            <i class="fas fa-weight"></i> Peso Líquido 200
+        </div>
+        <div class="calc-icon" data-calc="peso_liquido_litro">
+            <i class="fas fa-fill"></i> Peso Líquido Litro
+        </div>
+    </div>
+
+    <!-- Container da Calculadora -->
+    <div id="calculatorContainer" class="card">
+        <div class="card-body">
+            <div class="calculator-header" id="calculatorTitle">
+                <i class="fas fa-clock"></i> Tempo Finalização (TQ)
+            </div>
+            
+            <div class="info-card-wrapper">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fas fa-info-circle pulse-icon"></i>
+                        <h4 class="text-center mb-0">Cálculo de Tempo de Finalização do TQ</h4>
+                    </div>
+                    <div class="info-card-body">
+                        <p class="text-center description-text">
+                            Este cálculo determina o tempo estimado para finalizar o enchimento do tanque (TQ), 
+                            baseado na capacidade total, volume atual e linha utilizada.
+                        </p>
+                        <div class="formula-container">
+                            <div class="formula-item">
+                                <div class="formula-title"><i class="fas fa-clock"></i> Tempo de Finalização:</div>
+                                <div class="formula-equation">Tempo = (TQ Total - TQ Atual) ÷ Vazão da Linha</div>
+                            </div>
+                            <div class="formula-item">
+                                <div class="formula-title"><i class="fas fa-balance-scale"></i> Tempo até Metade do TQ:</div>
+                                <div class="formula-equation">Tempo = (TQ Total ÷ 2 - TQ Atual) ÷ Vazão da Linha</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <style>
+                .info-card-wrapper {
+                    display: flex;
+                    justify-content: center;
+                    margin-bottom: 2rem;
+                }
+                
+                .info-card {
+                    width: 100%;
+                    background: linear-gradient(135deg, #e6f7ff 0%, #f0f8ff 100%);
+                    border-radius: 12px;
+                    box-shadow: 0 4px 15px rgba(0, 136, 204, 0.1);
+                    overflow: hidden;
+                    border: 1px solid #d1ecff;
+                    transition: all 0.3s ease;
+                }
+                
+                .info-card:hover {
+                    box-shadow: 0 8px 25px rgba(0, 136, 204, 0.2);
+                    transform: translateY(-2px);
+                }
+                
+                .info-card-header {
+                    background: linear-gradient(to right, #0088cc, #33bbff);
+                    color: #fff;
+                    padding: 15px 20px;
+                    border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .info-card-header h4 {
+                    font-weight: 600;
+                    margin-left: 10px;
+                    letter-spacing: 0.5px;
+                }
+                
+                .info-card-body {
+                    padding: 20px;
+                }
+                
+                .description-text {
+                    color: #0c5a80;
+                    font-size: 1.1rem;
+                    font-weight: 500;
+                    margin-bottom: 20px;
+                    line-height: 1.6;
+                }
+                
+                .formula-container {
+                    background-color: rgba(255, 255, 255, 0.7);
+                    border-radius: 8px;
+                    padding: 15px;
+                    box-shadow: inset 0 0 8px rgba(0, 136, 204, 0.1);
+                }
+                
+                .formula-item {
+                    margin-bottom: 12px;
+                    padding-bottom: 12px;
+                    border-bottom: 1px dashed rgba(0, 136, 204, 0.3);
+                }
+                
+                .formula-item:last-child {
+                    margin-bottom: 0;
+                    padding-bottom: 0;
+                    border-bottom: none;
+                }
+                
+                .formula-title {
+                    color: #0088cc;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 5px;
+                }
+                
+                .formula-title i {
+                    margin-right: 8px;
+                }
+                
+                .formula-equation {
+                    background-color: rgba(0, 136, 204, 0.05);
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    font-family: 'Courier New', monospace;
+                    font-weight: 500;
+                    color: #0c5a80;
+                    text-align: center;
+                    border-left: 3px solid #0088cc;
+                }
+                
+                .pulse-icon {
+                    animation: pulse 2s infinite;
+                }
+                
+                @keyframes pulse {
+                    0% {
+                        transform: scale(1);
+                    }
+                    50% {
+                        transform: scale(1.2);
+                    }
+                    100% {
+                        transform: scale(1);
+                    }
+                }
+            </style>
+            
+            <form id="formTempoFinalizacao">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group field-tooltip">
+                            <label class="form-label">Capacidade Total do TQ:</label>
+                            <div class="input-with-unit">
+                                <input type="number" class="form-control" name="tq_total" step="1" max="32000" placeholder="Ex: 1000" required>
+                                <span class="input-unit">L</span>
+                            </div>
+                            <div class="tooltip-icon" title="Informe a capacidade total do tanque em litros (máx. 32.000)"><i class="fas fa-info-circle"></i></div>
+                            <div class="tooltip-text">Capacidade máxima do tanque - limite de 32.000 litros</div>
+                            <small class="form-text text-muted">Volume total que o tanque comporta</small>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="producaoCompleta">
+                            <label class="form-check-label" for="producaoCompleta">
+                                Produção Completa <small class="text-muted">(sem limite de litros)</small>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group field-tooltip">
+                            <label class="form-label">Volume Atual no TQ:</label>
+                            <div class="input-with-unit">
+                                <input type="number" class="form-control" name="tq_atual" step="1" placeholder="Ex: 250" required>
+                                <span class="input-unit">L</span>
+                            </div>
+                            <div class="tooltip-icon" title="Volume atual no tanque"><i class="fas fa-info-circle"></i></div>
+                            <div class="tooltip-text">Volume já presente no tanque em litros</div>
+                            <small class="form-text text-muted">Quanto já está no tanque agora</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group field-tooltip">
+                            <label class="form-label">Linha Utilizada:</label>
+                            <select class="form-select" name="linha">
+                                <option value="1000ml">1000ml</option>
+                                <option value="200ml">200ml</option>
+                            </select>
+                            <div class="tooltip-icon" title="Escolha a linha de produção"><i class="fas fa-info-circle"></i></div>
+                            <div class="tooltip-text">Define a vazão do processo</div>
+                            <small class="form-text text-muted">Selecione a linha em operação</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group field-tooltip">
+                            <label class="form-label">Hora Atual: <span class="live-indicator"></span><small class="text-success">atualizado</small></label>
+                            <input type="time" class="form-control" name="hora_atual" required>
+                            <div class="tooltip-icon" title="Hora de início do cálculo"><i class="fas fa-info-circle"></i></div>
+                            <div class="tooltip-text">Ponto inicial para o cálculo de finalização</div>
+                            <small class="form-text text-muted">Atualizado automaticamente</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12 text-end">
+                        <button type="button" class="btn btn-secondary me-2" id="btnLimpar">
+                            <i class="fas fa-eraser me-1"></i> Limpar
+                        </button>
+                        <button type="button" class="btn btn-calculate" id="btnCalcular">
+                            <span class="loader"></span> <i class="fas fa-calculator me-1"></i> Calcular
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="result-container mt-4 fade-in-up" id="resultadoCalculo" style="display:none;">
+                <!-- Cabeçalho do resultado -->
+                <div class="result-header">
+                    <div class="result-title">
+                        <i class="fas fa-chart-pie pulse-icon"></i>
+                        <h4>Resultados do Cálculo</h4>
+                    </div>
+                    <div class="result-status">
+                        <span class="status-badge">
+                            <i class="fas fa-check-circle"></i> Atualizado agora
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Resultados especiais para o cálculo de Tempo de Finalização (TQ) -->
+                <div class="result-content">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="result-metrics">
+                                <div class="metric-item">
+                                    <div class="metric-icon">
+                                        <i class="fas fa-hourglass-half"></i>
+                                    </div>
+                                    <div class="metric-info">
+                                        <div class="metric-label">Tempo Restante</div>
+                                        <div class="metric-value" id="tempoRestante">-</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="metric-item">
+                                    <div class="metric-icon">
+                                        <i class="fas fa-flag-checkered"></i>
+                                    </div>
+                                    <div class="metric-info">
+                                        <div class="metric-label">Horário de Finalização</div>
+                                        <div class="metric-value" id="horaFinalizacao">-</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="metric-item">
+                                    <div class="metric-icon">
+                                        <i class="fas fa-balance-scale"></i>
+                                    </div>
+                                    <div class="metric-info">
+                                        <div class="metric-label">Horário de Metade do TQ</div>
+                                        <div class="metric-value" id="horaMetade">-</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="metric-item">
+                                    <div class="metric-icon">
+                                        <i class="fas fa-tachometer-alt"></i>
+                                    </div>
+                                    <div class="metric-info">
+                                        <div class="metric-label">Vazão Utilizada</div>
+                                        <div class="metric-value" id="vazaoUtilizada">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <!-- Indicador visual com status -->
+                            <div class="progress-card">
+                                <div class="progress-header">
+                                    <div class="progress-title">
+                                        <i class="fas fa-tasks"></i>
+                                        <span>Status do TQ</span>
+                                    </div>
+                                    <div class="progress-status" id="statusBadge">Carregando...</div>
+                                </div>
+                                <div class="progress-body">
+                                    <div class="tank-progress">
+                                        <div class="tank-fill" id="tqProgress" style="width: 0%;"><span>0%</span></div>
+                                    </div>
+                                    <div class="tank-markers">
+                                        <div class="marker-start">0L</div>
+                                        <div class="marker-middle">50%</div>
+                                        <div class="marker-end" id="tqTotalValue">0L</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <style>
+                    .result-container {
+                        background: #fff;
+                        border-radius: 12px;
+                        box-shadow: 0 4px 15px rgba(0, 136, 204, 0.1);
+                        overflow: hidden;
+                        border: 1px solid #d1ecff;
+                    }
+                    
+                    .result-header {
+                        background: linear-gradient(to right, #0088cc, #33bbff);
+                        color: #fff;
+                        padding: 15px 20px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    
+                    .result-title {
+                        display: flex;
+                        align-items: center;
+                    }
+                    
+                    .result-title i {
+                        margin-right: 10px;
+                        font-size: 1.2rem;
+                    }
+                    
+                    .result-title h4 {
+                        margin: 0;
+                        font-size: 1.2rem;
+                        font-weight: 600;
+                    }
+                    
+                    .status-badge {
+                        background: rgba(255, 255, 255, 0.2);
+                        padding: 5px 10px;
+                        border-radius: 20px;
+                        font-size: 0.9rem;
+                        display: flex;
+                        align-items: center;
+                    }
+                    
+                    .status-badge i {
+                        margin-right: 5px;
+                    }
+                    
+                    .result-content {
+                        padding: 20px;
+                    }
+                    
+                    .result-metrics {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 15px;
+                    }
+                    
+                    .metric-item {
+                        display: flex;
+                        align-items: center;
+                        padding: 10px;
+                        border-radius: 8px;
+                        background: linear-gradient(135deg, #f8fcff 0%, #f0f8ff 100%);
+                        border: 1px solid #e6f7ff;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .metric-item:hover {
+                        transform: translateX(5px);
+                        box-shadow: 0 2px 8px rgba(0, 136, 204, 0.1);
+                    }
+                    
+                    .metric-icon {
+                        width: 40px;
+                        height: 40px;
+                        background: linear-gradient(to right, #0088cc, #33bbff);
+                        color: #fff;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-right: 15px;
+                        flex-shrink: 0;
+                    }
+                    
+                    .metric-info {
+                        flex-grow: 1;
+                    }
+                    
+                    .metric-label {
+                        font-size: 0.9rem;
+                        color: #6c757d;
+                        margin-bottom: 3px;
+                    }
+                    
+                    .metric-value {
+                        font-size: 1.3rem;
+                        font-weight: 600;
+                        color: #0c5a80;
+                    }
+                    
+                    .progress-card {
+                        background: linear-gradient(135deg, #f8fcff 0%, #f0f8ff 100%);
+                        border-radius: 8px;
+                        overflow: hidden;
+                        border: 1px solid #e6f7ff;
+                        height: 100%;
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    
+                    .progress-header {
+                        background: linear-gradient(to right, #0088cc, #33bbff);
+                        color: #fff;
+                        padding: 10px 15px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    
+                    .progress-title {
+                        display: flex;
+                        align-items: center;
+                        font-weight: 600;
+                    }
+                    
+                    .progress-title i {
+                        margin-right: 8px;
+                    }
+                    
+                    .progress-status {
+                        padding: 3px 8px;
+                        border-radius: 4px;
+                        font-size: 0.8rem;
+                        background: rgba(255, 255, 255, 0.2);
+                    }
+                    
+                    .progress-body {
+                        padding: 15px;
+                        display: flex;
+                        flex-direction: column;
+                        flex-grow: 1;
+                        justify-content: center;
+                    }
+                    
+                    .tank-progress {
+                        height: 35px;
+                        background: rgba(0, 136, 204, 0.1);
+                        border-radius: 30px;
+                        overflow: hidden;
+                        position: relative;
+                        margin-bottom: 10px;
+                        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+                    }
+                    
+                    .tank-fill {
+                        height: 100%;
+                        background: linear-gradient(to right, #0088cc, #33bbff);
+                        border-radius: 30px;
+                        position: relative;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #fff;
+                        font-weight: 600;
+                        transition: width 0.8s ease;
+                        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+                    }
+                    
+                    .tank-markers {
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 0 5px;
+                        font-size: 0.8rem;
+                        color: #6c757d;
+                    }
+                </style>
+                        
+                        <!-- Relógio digital interativo -->
+                        <div class="digital-timeline">
+                            <div class="timeline-header">
+                                <i class="fas fa-stopwatch"></i> Linha do Tempo de Processamento
+                            </div>
+                            <div class="timeline-content">
+                                <div class="timeline-step current">
+                                    <div class="timeline-icon">
+                                        <i class="fas fa-play-circle"></i>
+                                    </div>
+                                    <div class="timeline-clock">
+                                        <div class="clock-time" id="currentTime">--:--</div>
+                                    </div>
+                                    <div class="timeline-label">Hora Atual</div>
+                                </div>
+                                <div class="timeline-connection">
+                                    <div class="connection-line"></div>
+                                    <div class="connection-arrow">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </div>
+                                </div>
+                                <div class="timeline-step half">
+                                    <div class="timeline-icon">
+                                        <i class="fas fa-dot-circle"></i>
+                                    </div>
+                                    <div class="timeline-clock">
+                                        <div class="clock-time" id="halfTime">--:--</div>
+                                    </div>
+                                    <div class="timeline-label">Metade do TQ</div>
+                                </div>
+                                <div class="timeline-connection">
+                                    <div class="connection-line"></div>
+                                    <div class="connection-arrow">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </div>
+                                </div>
+                                <div class="timeline-step finish">
+                                    <div class="timeline-icon">
+                                        <i class="fas fa-flag-checkered"></i>
+                                    </div>
+                                    <div class="timeline-clock">
+                                        <div class="clock-time" id="finishTime">--:--</div>
+                                    </div>
+                                    <div class="timeline-label">Finalização</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <style>
+                            .digital-timeline {
+                                background: linear-gradient(to right, #f0f8ff, #e6f7ff);
+                                border-radius: 12px;
+                                box-shadow: 0 4px 15px rgba(0, 136, 204, 0.1);
+                                overflow: hidden;
+                                margin-top: 20px;
+                                border: 1px solid #d1ecff;
+                            }
+                            
+                            .timeline-header {
+                                background: linear-gradient(to right, #0088cc, #33bbff);
+                                color: #fff;
+                                padding: 12px 20px;
+                                font-weight: 600;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 1.1rem;
+                            }
+                            
+                            .timeline-header i {
+                                margin-right: 10px;
+                            }
+                            
+                            .timeline-content {
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                padding: 20px;
+                            }
+                            
+                            .timeline-step {
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                text-align: center;
+                                position: relative;
+                                flex: 1;
+                            }
+                            
+                            .timeline-icon {
+                                width: 40px;
+                                height: 40px;
+                                background-color: #fff;
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                box-shadow: 0 2px 10px rgba(0, 136, 204, 0.2);
+                                margin-bottom: 10px;
+                                border: 2px solid;
+                                z-index: 2;
+                            }
+                            
+                            .timeline-step.current .timeline-icon {
+                                border-color: #0088cc;
+                                color: #0088cc;
+                            }
+                            
+                            .timeline-step.half .timeline-icon {
+                                border-color: #33bbff;
+                                color: #33bbff;
+                            }
+                            
+                            .timeline-step.finish .timeline-icon {
+                                border-color: #28a745;
+                                color: #28a745;
+                            }
+                            
+                            .timeline-clock {
+                                font-size: 1.8rem;
+                                font-weight: bold;
+                                font-family: 'Courier New', monospace;
+                                padding: 5px 12px;
+                                border-radius: 6px;
+                                color: #0c5a80;
+                                border-bottom: 2px solid rgba(0, 136, 204, 0.3);
+                                width: 100px;
+                                text-align: center;
+                            }
+                            
+                            .timeline-label {
+                                font-size: 0.85rem;
+                                color: #0c5a80;
+                                font-weight: 500;
+                                margin-top: 6px;
+                            }
+                            
+                            .timeline-connection {
+                                position: relative;
+                                display: flex;
+                                align-items: center;
+                                flex: 0.5;
+                                height: 20px;
+                                z-index: 1;
+                            }
+                            
+                            .connection-line {
+                                height: 2px;
+                                background: linear-gradient(to right, #0088cc, #33bbff);
+                                flex-grow: 1;
+                            }
+                            
+                            .connection-arrow {
+                                color: #33bbff;
+                                margin: 0 5px;
+                            }
+                        </style>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Dica:</strong> Busque o cálculo desejado utilizando a barra de pesquisa no topo ou clique nos ícones dos cálculos.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Função para atualizar o relógio em tempo real
+let clockInterval;
+
+function updateClockInRealTime() {
+    // Limpar qualquer intervalo existente
+    if (clockInterval) {
+        clearInterval(clockInterval);
+    }
+    
+    // Atualizar o relógio a cada segundo
+    clockInterval = setInterval(function() {
+        const agora = new Date();
+        const horaFormatada = agora.getHours().toString().padStart(2, '0') + ':' + 
+                           agora.getMinutes().toString().padStart(2, '0');
+        
+        // Atualizar apenas o relógio atual
+        if (document.getElementById('currentTime')) {
+            document.getElementById('currentTime').textContent = horaFormatada;
+        } else {
+            // Se o elemento não existir mais, parar o intervalo
+            clearInterval(clockInterval);
+        }
+    }, 60000); // Atualizar a cada minuto
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Preenche o campo de hora atual com a hora do sistema
+    const horaAtualInput = document.querySelector('input[name="hora_atual"]');
+    if (horaAtualInput) {
+        const agora = new Date();
+        const horaFormatada = agora.getHours().toString().padStart(2, '0') + ':' + 
+                             agora.getMinutes().toString().padStart(2, '0');
+        horaAtualInput.value = horaFormatada;
+    }
+    
+    // Controla o comportamento da opção "Produção Completa"
+    const checkbox = document.getElementById('producaoCompleta');
+    const inputTqTotal = document.querySelector('input[name="tq_total"]');
+    
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            // Remove o limite e o atributo max quando "Produção Completa" está marcado
+            inputTqTotal.removeAttribute('max');
+            // Atualiza a dica visual
+            document.querySelector('.tooltip-text').textContent = 'Modo produção completa - sem limite de litros';
+        } else {
+            // Restaura o limite de 32000 litros quando desmarcado
+            inputTqTotal.setAttribute('max', 32000);
+            // Restaura a dica visual
+            document.querySelector('.tooltip-text').textContent = 'Capacidade máxima do tanque - limite de 32.000 litros';
+        }
+    });
+    
+    // Filtro de pesquisa para ícones de cálculo
+    const searchInput = document.getElementById('searchCalc');
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        document.querySelectorAll('.calc-icon').forEach(icon => {
+            const text = icon.textContent.toLowerCase();
+            const shouldShow = text.includes(searchTerm);
+            
+            icon.style.display = shouldShow ? '' : 'none';
+        });
+    });
+    
+    // Clique nos ícones de cálculo
+    document.querySelectorAll('.calc-icon').forEach(icon => {
+        icon.addEventListener('click', function() {
+            // Remover classe ativa de todos os ícones
+            document.querySelectorAll('.calc-icon').forEach(i => i.classList.remove('active'));
+            // Adicionar classe ativa ao ícone clicado
+            this.classList.add('active');
+            
+            // Aqui você poderia carregar o cálculo específico
+            const calcId = this.getAttribute('data-calc');
+            document.getElementById('calculatorTitle').innerHTML = `<i class="${this.querySelector('i').className}"></i> ${this.textContent.trim()}`;
+            
+            // Esta é uma simulação - em um cenário real, você carregaria o conteúdo específico
+            if (calcId === 'tempo_finalizacao') {
+                // Não fazer nada, já estamos na página correta
+            } else {
+                // Simulação: mostrar mensagem ou redirecionamento
+                alert(`Em uma implementação completa, carregaria o cálculo: ${this.textContent.trim()}`);
+            }
+        });
+    });
+    
+    // Botão de limpar
+    document.getElementById('btnLimpar').addEventListener('click', function() {
+        document.getElementById('formTempoFinalizacao').reset();
+        document.getElementById('resultadoCalculo').style.display = 'none';
+        
+        // Preencher novamente o campo de hora atual
+        if (horaAtualInput) {
+            const agora = new Date();
+            const horaFormatada = agora.getHours().toString().padStart(2, '0') + ':' + 
+                                agora.getMinutes().toString().padStart(2, '0');
+            horaAtualInput.value = horaFormatada;
+        }
+    });
+    
+    // Botão de calcular
+    document.getElementById('btnCalcular').addEventListener('click', function() {
+        calcularTempoFinalizacao();
+    });
+    
+    // Função para calcular o tempo de finalização
+    function calcularTempoFinalizacao() {
+        const form = document.getElementById('formTempoFinalizacao');
+        
+        // Obter valores do formulário
+        const tqTotal = parseFloat(form.querySelector('input[name="tq_total"]').value) || 0;
+        const tqAtual = parseFloat(form.querySelector('input[name="tq_atual"]').value) || 0;
+        const linha = form.querySelector('select[name="linha"]').value;
+        const horaAtualInput = form.querySelector('input[name="hora_atual"]').value || '';
+        
+        // Validar os dados
+        if (tqTotal <= 0 || tqAtual < 0) {
+            alert('Por favor, informe valores válidos para capacidade total e volume atual.');
+            return;
+        }
+        
+        if (tqAtual > tqTotal) {
+            alert('O volume atual não pode ser maior que a capacidade total do TQ.');
+            return;
+        }
+        
+        // Definir a vazão com base na linha selecionada
+        let vazao = 0;
+        if (linha === '1000ml') {
+            vazao = 200; // 200 L/min para linha 1000ml
+        } else if (linha === '200ml') {
+            vazao = 80;  // 80 L/min para linha 200ml
+        }
+        
+        // Calcular volume restante
+        const volumeRestante = tqTotal - tqAtual;
+        
+        // Calcular tempo para finalizar em minutos
+        const tempoFinalMinutos = volumeRestante / vazao;
+        
+        // Calcular o tempo até a metade do TQ
+        // Fórmula correta: Tempo = (TQ Total ÷ 2 - TQ ATUAL) ÷ Vazão da Linha
+        const meioTqLitros = tqTotal / 2;
+        const volumeAteMeio = Math.max(0, meioTqLitros - tqAtual);
+        const tempoMeioMinutos = volumeAteMeio / vazao;
+        
+        // Calcular o percentual atual do TQ
+        const percentualAtual = (tqAtual / tqTotal) * 100;
+        
+        // Formatar o tempo restante
+        const tempoHoras = Math.floor(tempoFinalMinutos / 60);
+        const tempoMinutos = Math.floor(tempoFinalMinutos % 60);
+        const tempoSegundos = Math.floor((tempoFinalMinutos % 1) * 60);
+        const tempoFormatado = `${tempoHoras > 0 ? tempoHoras + 'h ' : ''}${tempoMinutos}min ${tempoSegundos}s`;
+        
+        // Obter hora atual a partir do input ou usar a hora atual do sistema
+        let horaAtual;
+        if (horaAtualInput) {
+            const [horas, minutos] = horaAtualInput.split(':').map(Number);
+            horaAtual = new Date();
+            horaAtual.setHours(horas, minutos, 0);
+        } else {
+            horaAtual = new Date();
+        }
+        
+        // Calcular hora de finalização
+        const horaFinalizacao = new Date(horaAtual.getTime() + tempoFinalMinutos * 60000);
+        const horaFinalizacaoFormatada = `${horaFinalizacao.getHours().toString().padStart(2, '0')}:${horaFinalizacao.getMinutes().toString().padStart(2, '0')}`;
+        
+        // Calcular hora de metade
+        const horaMeio = new Date(horaAtual.getTime() + tempoMeioMinutos * 60000);
+        const horaMeioFormatada = volumeAteMeio > 0 ? 
+            `${horaMeio.getHours().toString().padStart(2, '0')}:${horaMeio.getMinutes().toString().padStart(2, '0')}` : 
+            'Já passou da metade';
+        
+        // Exibir os resultados no HTML
+        document.getElementById('tempoRestante').textContent = tempoFormatado;
+        document.getElementById('horaFinalizacao').textContent = horaFinalizacaoFormatada;
+        document.getElementById('horaMetade').textContent = horaMeioFormatada;
+        document.getElementById('vazaoUtilizada').textContent = vazao + ' L/min';
+        
+        // Atualizar a barra de progresso
+        const progressBar = document.getElementById('tqProgress');
+        progressBar.style.width = percentualAtual + '%';
+        progressBar.textContent = percentualAtual.toFixed(1) + '%';
+        progressBar.setAttribute('aria-valuenow', percentualAtual);
+        
+        // Atualizar o relógio digital
+        const currentTimeStr = `${horaAtual.getHours().toString().padStart(2, '0')}:${horaAtual.getMinutes().toString().padStart(2, '0')}`;
+        document.getElementById('currentTime').textContent = currentTimeStr;
+        document.getElementById('finishTime').textContent = horaFinalizacaoFormatada;
+        
+        // Atualizar o relógio de metade do TQ
+        if (volumeAteMeio > 0) {
+            document.getElementById('halfTime').textContent = horaMeioFormatada;
+        } else {
+            document.getElementById('halfTime').textContent = 'Passou';
+            document.getElementById('halfTime').style.color = '#28a745';
+        }
+        
+        // Atualizar o valor total do TQ na escala
+        document.getElementById('tqTotalValue').textContent = tqTotal + 'L';
+        
+        // Atualizar o status badge
+        const statusBadge = document.getElementById('statusBadge');
+        if (percentualAtual < 25) {
+            statusBadge.className = 'float-end badge bg-danger';
+            statusBadge.textContent = 'Início do processo';
+        } else if (percentualAtual < 50) {
+            statusBadge.className = 'float-end badge bg-warning';
+            statusBadge.textContent = 'Em andamento';
+        } else if (percentualAtual < 75) {
+            statusBadge.className = 'float-end badge bg-info';
+            statusBadge.textContent = 'Mais da metade';
+        } else if (percentualAtual < 95) {
+            statusBadge.className = 'float-end badge bg-primary';
+            statusBadge.textContent = 'Quase finalizado';
+        } else {
+            statusBadge.className = 'float-end badge bg-success';
+            statusBadge.textContent = 'Finalizado';
+        }
+        
+        // Mostrar a caixa de resultado com animação fade-in
+        const resultBox = document.getElementById('resultadoCalculo');
+        resultBox.style.display = 'block';
+        
+        // Atualização em tempo real do relógio
+        updateClockInRealTime();
+    }
+});
+</script>
+{% endblock %}

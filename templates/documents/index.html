@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Documentos - Zelopack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-feature {
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        height: 100%;
+        border: none;
+    }
+    
+    .card-feature:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    
+    .card-feature .card-header {
+        background: linear-gradient(135deg, #00978D 0%, #09827B 100%);
+        color: white;
+        font-weight: bold;
+        border: none;
+    }
+    
+    .card-feature .card-body {
+        padding: 1.5rem;
+    }
+    
+    .card-feature .feature-icon {
+        font-size: 2.5rem;
+        color: #09827B;
+        margin-bottom: 1rem;
+    }
+    
+    .btn-feature {
+        background-color: #09827B;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-feature:hover {
+        background-color: #00635C;
+        color: white;
+    }
+    
+    .feature-description {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+        height: 80px;
+        overflow: hidden;
+    }
+    
+    .document-list {
+        margin-top: 20px;
+    }
+    
+    .document-item {
+        border-left: 3px solid #00978D;
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        background-color: #f8f9fa;
+        transition: all 0.2s;
+    }
+    
+    .document-item:hover {
+        background-color: #e9ecef;
+        transform: translateX(5px);
+    }
+    
+    .document-item .doc-title {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .document-item .doc-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .stats-box {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #00978D;
+    }
+    
+    .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-3">
+                <i class="fas fa-folder"></i> Documentos Técnicos
+            </h2>
+            <p class="lead">
+                Gerencie documentação técnica, relatórios e formulários
+            </p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Editor de Documentos -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-feature">
+                <div class="card-header">
+                    <i class="fas fa-edit me-2"></i> Editor de Documentos
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <div class="feature-icon text-center">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h5 class="card-title">Editor em Tempo Real</h5>
+                    <div class="feature-description">
+                        Novo editor de documentos com colaboração em tempo real, templates profissionais e exportação em múltiplos formatos.
+                    </div>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('documents.editor') }}" class="btn btn-feature w-100">
+                            <i class="fas fa-edit me-2"></i> Abrir Editor
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Documentos Recentes -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-feature">
+                <div class="card-header">
+                    <i class="fas fa-file-upload me-2"></i> Upload de Documentos
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <div class="feature-icon text-center">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h5 class="card-title">Fazer Upload</h5>
+                    <div class="feature-description">
+                        Faça upload de documentos, relatórios e outros arquivos importantes para acesso centralizado.
+                    </div>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('documents.upload_document') }}" class="btn btn-feature w-100">
+                            <i class="fas fa-upload me-2"></i> Enviar Documento
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Biblioteca de Templates -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-feature">
+                <div class="card-header">
+                    <i class="fas fa-book me-2"></i> Biblioteca
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <div class="feature-icon text-center">
+                        <i class="fas fa-th-large"></i>
+                    </div>
+                    <h5 class="card-title">Templates e Modelos</h5>
+                    <div class="feature-description">
+                        Acesse nossa biblioteca de templates e modelos pré-formatados para laudos, relatórios e documentação técnica.
+                    </div>
+                    <div class="mt-auto">
+                        <a href="#" class="btn btn-feature w-100">
+                            <i class="fas fa-search me-2"></i> Explorar Biblioteca
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estatísticas e Documentos Recentes -->
+    <div class="row mt-4">
+        <!-- Estatísticas -->
+        <div class="col-md-4">
+            <h4><i class="fas fa-chart-pie me-2"></i> Estatísticas</h4>
+            <div class="stats-box">
+                <div class="row">
+                    {% for category, count in stats.items() %}
+                    <div class="col-md-6 mb-3">
+                        <div class="stats-number">{{ count }}</div>
+                        <div class="stats-label">{{ category }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Documentos Recentes -->
+        <div class="col-md-8">
+            <h4><i class="fas fa-history me-2"></i> Documentos Recentes</h4>
+            <div class="document-list">
+                {% for doc in recent_docs %}
+                <div class="document-item">
+                    <div class="d-flex justify-content-between">
+                        <div class="doc-title">
+                            <i class="fas fa-file-{{ doc.file_type }} me-2"></i>
+                            <a href="{{ url_for('documents.view_document', document_id=doc.id) }}">{{ doc.title }}</a>
+                        </div>
+                        <div class="doc-actions">
+                            <a href="{{ url_for('documents.view_document', document_id=doc.id) }}?online=true" class="btn btn-sm btn-outline-primary me-1" title="Visualizar online">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('documents.download_document', document_id=doc.id) }}" class="btn btn-sm btn-outline-secondary" title="Download">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="doc-meta">
+                        <span><i class="fas fa-user me-1"></i> {{ doc.author }}</span>
+                        <span class="ms-3"><i class="fas fa-calendar-alt me-1"></i> {{ doc.upload_date.strftime('%d/%m/%Y') }}</span>
+                        <span class="ms-3"><i class="fas fa-tag me-1"></i> {{ doc.document_type|capitalize }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if not recent_docs %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> Nenhum documento encontrado. Comece a criar ou fazer upload de documentos.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Novidade!</strong> Editor de documentos com colaboração em tempo real adicionado. Experimente agora clicando no botão "Abrir Editor".
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Inicializar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

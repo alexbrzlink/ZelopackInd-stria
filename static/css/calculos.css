@@ -1,0 +1,426 @@
+/**
+ * Estilos específicos para o módulo de cálculos
+ * Interface moderna e interativa para cálculos laboratoriais
+ */
+
+/* Container principal */
+.container-calculos {
+    display: flex;
+    min-height: calc(100vh - 180px);
+    background-color: var(--zelopack-bg-main);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 0.5rem 1rem var(--zelopack-shadow);
+    margin-bottom: 2rem;
+}
+
+/* Sidebar */
+.sidebar-calculos {
+    width: 280px;
+    background-color: var(--zelopack-bg-card);
+    border-right: 1px solid var(--zelopack-border-color);
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease;
+}
+
+.sidebar-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--zelopack-border-color);
+    background: linear-gradient(135deg, var(--zelopack-primary-light) 0%, var(--zelopack-primary) 100%);
+    color: #fff;
+}
+
+.sidebar-search {
+    padding: 1rem;
+    border-bottom: 1px solid var(--zelopack-border-color);
+}
+
+.search-input {
+    padding-left: 2.5rem;
+    background-color: var(--zelopack-bg-main);
+    border: 1px solid var(--zelopack-border-color);
+}
+
+.search-icon {
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--zelopack-text-secondary);
+}
+
+.calculo-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.calculo-category {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 1px solid var(--zelopack-border-color);
+    transition: background-color 0.2s;
+}
+
+[data-bs-theme="dark"] .calculo-category {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.calculo-category:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-bs-theme="dark"] .calculo-category:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.calculo-category div {
+    display: flex;
+    align-items: center;
+}
+
+.calculo-category div i {
+    margin-right: 0.75rem;
+    color: var(--zelopack-primary);
+}
+
+.calculo-item {
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 1px solid var(--zelopack-border-color);
+}
+
+.calculo-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+[data-bs-theme="dark"] .calculo-item:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.calculo-item.active {
+    background-color: rgba(var(--zelopack-primary-rgb), 0.1);
+    border-left: 4px solid var(--zelopack-primary);
+    font-weight: 500;
+}
+
+.calculo-item i {
+    margin-right: 0.75rem;
+    color: var(--zelopack-primary);
+}
+
+/* Conteúdo principal */
+.content-calculos {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Área de cálculo - estilo base */
+.calculo-area {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.calculo-area.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.calculo-area h2 {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    color: var(--zelopack-primary);
+    border-bottom: 2px solid var(--zelopack-primary);
+    padding-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.calculo-area h2 i {
+    margin-right: 0.75rem;
+    font-size: 1.5rem;
+}
+
+.calculo-description {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: var(--zelopack-bg-card);
+    border-radius: 0.5rem;
+    border-left: 4px solid var(--zelopack-primary);
+    box-shadow: 0 0.25rem 0.5rem var(--zelopack-shadow);
+}
+
+/* Inputs e controles */
+.calculo-form {
+    background-color: var(--zelopack-bg-card);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 0.5rem var(--zelopack-shadow);
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.form-group label .unit {
+    margin-left: 0.5rem;
+    color: var(--zelopack-text-secondary);
+    font-size: 0.875rem;
+    font-weight: normal;
+}
+
+.form-group .form-text {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.input-group-text {
+    background-color: var(--zelopack-primary);
+    color: white;
+    font-weight: 500;
+    border: none;
+}
+
+.help-icon {
+    margin-left: 0.5rem;
+    color: var(--zelopack-secondary);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+}
+
+.help-icon:hover {
+    color: var(--zelopack-primary);
+}
+
+/* Botões de ação */
+.actions-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.btn-calculate {
+    background: linear-gradient(135deg, var(--zelopack-primary-light) 0%, var(--zelopack-primary) 100%);
+    color: white;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    box-shadow: 0 0.25rem 0.5rem rgba(var(--zelopack-primary-rgb), 0.3);
+}
+
+.btn-calculate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.35rem 0.65rem rgba(var(--zelopack-primary-rgb), 0.4);
+    color: white;
+}
+
+.btn-calculate:active {
+    transform: translateY(0);
+}
+
+.btn-calculate i {
+    margin-right: 0.5rem;
+}
+
+.btn-clear {
+    background-color: var(--zelopack-secondary);
+    color: white;
+}
+
+.btn-save {
+    background-color: var(--zelopack-success);
+    color: white;
+}
+
+/* Resultado do cálculo */
+.resultado-area {
+    background-color: var(--zelopack-bg-card);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 0.5rem var(--zelopack-shadow);
+    margin-bottom: 2rem;
+    display: none;
+    animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.resultado-area.active {
+    display: block;
+}
+
+.resultado-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--zelopack-primary);
+}
+
+.resultado-header h4 {
+    margin: 0;
+    color: var(--zelopack-primary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.resultado-header h4 i {
+    margin-right: 0.75rem;
+}
+
+.resultado-value {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    margin: 1.5rem 0;
+    color: var(--zelopack-primary);
+}
+
+.resultado-formula {
+    background-color: var(--zelopack-bg-main);
+    padding: 1rem;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+    font-family: 'Courier New', monospace;
+    overflow-x: auto;
+}
+
+.resultado-details {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.details-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--zelopack-border-color);
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Visualizações gráficas */
+.grafico-container {
+    width: 100%;
+    height: 300px;
+    background-color: var(--zelopack-bg-main);
+    border-radius: 0.25rem;
+    overflow: hidden;
+    margin-top: 1.5rem;
+}
+
+/* Estilos para valores numéricos */
+.number-value {
+    font-family: 'Courier New', monospace;
+    background-color: var(--zelopack-bg-main);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+}
+
+/* Visual hints */
+.visual-hint {
+    display: flex;
+    align-items: center;
+    background-color: rgba(var(--zelopack-primary-rgb), 0.1);
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    margin-top: 1rem;
+}
+
+.visual-hint i {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    color: var(--zelopack-primary);
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+    .container-calculos {
+        flex-direction: column;
+    }
+    
+    .sidebar-calculos {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--zelopack-border-color);
+    }
+    
+    .calculo-list {
+        max-height: 300px;
+    }
+}
+
+/* Animações e transições */
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Microinterações */
+.input-with-unit {
+    position: relative;
+}
+
+.input-unit {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--zelopack-text-secondary);
+    font-size: 0.875rem;
+    user-select: none;
+    pointer-events: none;
+}

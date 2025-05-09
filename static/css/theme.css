@@ -1,0 +1,151 @@
+/**
+ * Estilos específicos para os temas claro e escuro
+ * Baseado no atributo data-bs-theme do elemento root HTML
+ */
+
+:root {
+    --zelopack-primary: #0d6efd;
+    --zelopack-primary-dark: #0b5ed7;
+    --zelopack-primary-light: #3c8aff;
+    --zelopack-secondary: #6c757d;
+    --zelopack-success: #198754;
+    --zelopack-info: #0dcaf0;
+    --zelopack-warning: #ffc107;
+    --zelopack-danger: #dc3545;
+    --zelopack-light: #f8f9fa;
+    --zelopack-dark: #212529;
+    
+    --transition-speed: 0.3s;
+}
+
+/* Estilo global */
+body {
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+/* Temas do sistema */
+[data-bs-theme="light"] {
+    color-scheme: light;
+    --zelopack-bg-main: #f8f9fa;
+    --zelopack-bg-card: #ffffff;
+    --zelopack-bg-footer: #f1f3f5;
+    --zelopack-text-main: #212529;
+    --zelopack-text-secondary: #6c757d;
+    --zelopack-text-light: #adb5bd;
+    --zelopack-border-color: #dee2e6;
+    --zelopack-shadow: rgba(0, 0, 0, 0.1);
+}
+
+[data-bs-theme="dark"] {
+    color-scheme: dark;
+    --zelopack-bg-main: #212529;
+    --zelopack-bg-card: #2c3034;
+    --zelopack-bg-footer: #343a40;
+    --zelopack-text-main: #f8f9fa;
+    --zelopack-text-secondary: #adb5bd;
+    --zelopack-text-light: #6c757d;
+    --zelopack-border-color: #495057;
+    --zelopack-shadow: rgba(0, 0, 0, 0.25);
+}
+
+/* Elementos específicos */
+body {
+    background-color: var(--zelopack-bg-main);
+    color: var(--zelopack-text-main);
+}
+
+.card {
+    background-color: var(--zelopack-bg-card);
+    border-color: var(--zelopack-border-color);
+}
+
+.card-header, .card-footer {
+    background-color: transparent;
+    border-color: var(--zelopack-border-color);
+}
+
+.table {
+    color: var(--zelopack-text-main);
+}
+
+.footer {
+    background-color: var(--zelopack-bg-footer) !important;
+    color: var(--zelopack-text-main);
+}
+
+/* Elemento de alternância de tema */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+}
+
+.theme-toggle:hover {
+    opacity: 0.8;
+}
+
+.theme-toggle i {
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+}
+
+/* Estilo para o modo escuro */
+[data-bs-theme="dark"] .table-hover tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.075);
+}
+
+[data-bs-theme="dark"] .dropdown-menu {
+    background-color: var(--zelopack-bg-card);
+    border-color: var(--zelopack-border-color);
+}
+
+[data-bs-theme="dark"] .dropdown-item {
+    color: var(--zelopack-text-main);
+}
+
+[data-bs-theme="dark"] .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.075);
+}
+
+/* Animações de transição */
+.card, .btn, .alert, .nav-link, .navbar, .dropdown-menu, 
+.list-group-item, .form-control, .modal-content {
+    transition: background-color var(--transition-speed), 
+                color var(--transition-speed), 
+                border-color var(--transition-speed);
+}
+
+/* Correções para modo escuro */
+[data-bs-theme="dark"] .text-muted {
+    color: #adb5bd !important;
+}
+
+[data-bs-theme="dark"] .border {
+    border-color: var(--zelopack-border-color) !important;
+}
+
+[data-bs-theme="dark"] .shadow-sm {
+    box-shadow: 0 .125rem .25rem var(--zelopack-shadow) !important;
+}
+
+[data-bs-theme="dark"] .shadow {
+    box-shadow: 0 .5rem 1rem var(--zelopack-shadow) !important;
+}
+
+/* Ajustes para formulários */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .input-group-text {
+    background-color: #343a40;
+    border-color: var(--zelopack-border-color);
+    color: var(--zelopack-text-main);
+}
+
+[data-bs-theme="dark"] .form-control:focus {
+    background-color: #3a4147;
+    color: var(--zelopack-text-main);
+}

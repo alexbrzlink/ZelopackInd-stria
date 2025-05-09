@@ -1,0 +1,426 @@
+{% extends 'base.html' %}
+
+{% block title %}Estatísticas - Zelopack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-header {
+        background: linear-gradient(135deg, #20c997 0%, #0ca678 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .stats-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-header p {
+        opacity: 0.85;
+        max-width: 80%;
+    }
+    
+    .stat-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 1.5rem;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--color-start) 0%, var(--color-end) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .chart-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 1.5rem;
+        height: 100%;
+    }
+    
+    .chart-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .chart-img {
+        max-width: 100%;
+        border-radius: 8px;
+    }
+    
+    .activity-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .activity-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #343a40;
+    }
+    
+    .activity-item {
+        padding: 0.75rem;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        background-color: #f8f9fa;
+        transition: all 0.2s ease;
+    }
+    
+    .activity-item:hover {
+        background-color: #e9ecef;
+    }
+    
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-right: 1rem;
+        color: white;
+    }
+    
+    .activity-content {
+        flex-grow: 1;
+    }
+    
+    .activity-user {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .activity-details {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .activity-time {
+        font-size: 0.8rem;
+        color: #adb5bd;
+    }
+    
+    .activity-view {
+        background-color: #20c997;
+    }
+    
+    .activity-create {
+        background-color: #3498db;
+    }
+    
+    .activity-update {
+        background-color: #f39c12;
+    }
+    
+    .activity-delete {
+        background-color: #e74c3c;
+    }
+    
+    .module-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+        height: 100%;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    .module-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+    }
+    
+    .module-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #20c997 0%, #0ca678 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        transition: transform 0.3s ease;
+    }
+    
+    .module-card:hover .module-icon {
+        transform: scale(1.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho de Estatísticas -->
+    <div class="stats-header mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-chart-line me-2"></i> Estatísticas</h1>
+                <p class="mb-0">Painel de análise e visualização de dados do sistema.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <div class="btn-group">
+                    <a href="{{ url_for('estatisticas.documents_statistics') }}" class="btn btn-light">
+                        <i class="fas fa-file-alt me-2"></i> Documentos
+                    </a>
+                    {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('estatisticas.users_statistics') }}" class="btn btn-light">
+                        <i class="fas fa-users me-2"></i> Usuários
+                    </a>
+                    <a href="{{ url_for('estatisticas.activities_statistics') }}" class="btn btn-light">
+                        <i class="fas fa-history me-2"></i> Atividades
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estatísticas Rápidas -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow stat-card">
+                <div class="card-body text-center p-4">
+                    <div class="stat-icon" style="--color-start: #20c997; --color-end: #0ca678;">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-value">{{ total_reports }}</div>
+                    <div class="stat-label">Documentos</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card shadow stat-card">
+                <div class="card-body text-center p-4">
+                    <div class="stat-icon" style="--color-start: #20c997; --color-end: #0ca678;">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="stat-value">{{ total_suppliers }}</div>
+                    <div class="stat-label">Fornecedores</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card shadow stat-card">
+                <div class="card-body text-center p-4">
+                    <div class="stat-icon" style="--color-start: #20c997; --color-end: #0ca678;">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value">{{ total_users }}</div>
+                    <div class="stat-label">Usuários</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráficos Principais -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card chart-card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Documentos por Mês</h5>
+                </div>
+                <div class="card-body text-center p-4">
+                    {% if line_chart %}
+                        <img src="data:image/png;base64,{{ line_chart }}" alt="Documentos por Mês" class="chart-img">
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Não há dados suficientes para gerar o gráfico.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card activity-card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i> Atividades Recentes</h5>
+                </div>
+                <div class="card-body p-3">
+                    {% if recent_activities %}
+                        {% for activity in recent_activities[:5] %}
+                            <div class="activity-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="activity-icon activity-{{ activity.action }}">
+                                        {% if activity.action == 'view' %}
+                                            <i class="fas fa-eye"></i>
+                                        {% elif activity.action == 'create' %}
+                                            <i class="fas fa-plus"></i>
+                                        {% elif activity.action == 'update' %}
+                                            <i class="fas fa-edit"></i>
+                                        {% elif activity.action == 'delete' %}
+                                            <i class="fas fa-trash"></i>
+                                        {% else %}
+                                            <i class="fas fa-cog"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-user">{{ activity.user.name }}</div>
+                                        <div class="activity-details">{{ activity.details }}</div>
+                                        <div class="activity-time">{{ activity.timestamp.strftime('%d/%m/%Y %H:%M') }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div class="text-center mt-3">
+                            {% if current_user.role == 'admin' %}
+                                <a href="{{ url_for('auth.activities') }}" class="btn btn-sm btn-outline-secondary">
+                                    Ver todas as atividades
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Nenhuma atividade recente.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráficos Secundários -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card chart-card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Documentos por Fornecedor</h5>
+                </div>
+                <div class="card-body text-center p-4">
+                    {% if bar_chart %}
+                        <img src="data:image/png;base64,{{ bar_chart }}" alt="Documentos por Fornecedor" class="chart-img">
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Não há dados suficientes para gerar o gráfico.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card chart-card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i> Atividades por Módulo</h5>
+                </div>
+                <div class="card-body text-center p-4">
+                    {% if pie_chart %}
+                        <img src="data:image/png;base64,{{ pie_chart }}" alt="Atividades por Módulo" class="chart-img">
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Não há dados suficientes para gerar o gráfico.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Módulos de Estatísticas -->
+    <div class="row mt-4">
+        <div class="col-12 mb-3">
+            <h4><i class="fas fa-chart-line me-2"></i> Análises Detalhadas</h4>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card module-card">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-file-alt module-icon"></i>
+                    <h5>Análise de Documentos</h5>
+                    <p class="text-muted small mb-4">Estatísticas detalhadas sobre documentos, categorias e status.</p>
+                    <a href="{{ url_for('estatisticas.documents_statistics') }}" class="btn btn-success">
+                        <i class="fas fa-chart-line me-1"></i> Visualizar
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card module-card">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-users module-icon"></i>
+                    <h5>Análise de Usuários</h5>
+                    <p class="text-muted small mb-4">Estatísticas sobre usuários, papéis e atividades.</p>
+                    {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('estatisticas.users_statistics') }}" class="btn btn-success">
+                            <i class="fas fa-chart-line me-1"></i> Visualizar
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary" disabled>
+                            <i class="fas fa-lock me-1"></i> Acesso Restrito
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card module-card">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-history module-icon"></i>
+                    <h5>Análise de Atividades</h5>
+                    <p class="text-muted small mb-4">Estatísticas sobre ações, módulos e horários de uso.</p>
+                    {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('estatisticas.activities_statistics') }}" class="btn btn-success">
+                            <i class="fas fa-chart-line me-1"></i> Visualizar
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary" disabled>
+                            <i class="fas fa-lock me-1"></i> Acesso Restrito
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ativar o link de estatísticas no menu
+        const navItems = document.querySelectorAll('.nav-item .nav-link');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const statsLink = document.querySelector('a[href="{{ url_for("estatisticas.index") }}"]');
+        if (statsLink) {
+            statsLink.classList.add('active');
+        }
+    });
+</script>
+{% endblock %}

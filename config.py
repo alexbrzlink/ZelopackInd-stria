@@ -1,57 +1,26 @@
 import os
 
 class Config:
-    # Flask configuration
-    SECRET_KEY = os.environ.get('SESSION_SECRET', 'default-secret-key')
-    DEBUG = True
+    """Configurações base para a aplicação."""
+    SECRET_KEY = os.environ.get('SESSION_SECRET', 'zelopack-dev-key')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///zelopack.db')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB limite máximo
+    ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'xls', 'xlsx'}
 
-    # Firebase configuration
-    FIREBASE_API_KEY = os.environ.get('FIREBASE_API_KEY')
-    FIREBASE_PROJECT_ID = os.environ.get('FIREBASE_PROJECT_ID')
-    FIREBASE_APP_ID = os.environ.get('FIREBASE_APP_ID')
+class DevelopmentConfig(Config):
+    """Configurações para ambiente de desenvolvimento."""
+    DEBUG = True
     
-    # Database configuration (if needed)
-    DATABASE_URL = os.environ.get('DATABASE_URL')
+class ProductionConfig(Config):
+    """Configurações para ambiente de produção."""
+    DEBUG = False
+    # Em produção, é recomendável usar um servidor WSGI como Gunicorn
     
-    # Application configuration
-    APP_NAME = 'Zelopack Gerenciamento de Recursos'
-    
-    # Resource categories
-    RESOURCE_CATEGORIES = [
-        'Equipamento',
-        'Ferramenta',
-        'Sala',
-        'Veículo',
-        'Material',
-        'Software',
-        'Outro'
-    ]
-    
-    # Resource status options
-    RESOURCE_STATUS = [
-        'disponível',
-        'em uso',
-        'em manutenção',
-        'reservado',
-        'indisponível'
-    ]
-    
-    # User roles
-    USER_ROLES = [
-        'admin',
-        'gestor',
-        'usuário'
-    ]
-    
-    # Departments
-    DEPARTMENTS = [
-        'Administrativo',
-        'Operações',
-        'Logística',
-        'TI',
-        'Financeiro',
-        'RH',
-        'Vendas',
-        'Marketing',
-        'Outro'
-    ]
+# Configuração que será usada
+config = {
+    'development': DevelopmentConfig,
+    'production': ProductionConfig,
+    'default': DevelopmentConfig
+}

@@ -1,0 +1,967 @@
+{% extends 'base.html' %}
+
+{% block title %}Preenchimento Interativo - {{ file_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header personalizado com gradiente -->
+    <div class="interactive-form-header rounded-lg mb-4 p-4 animate-fade-in">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="text-white fw-bold mb-1 d-flex align-items-center">
+                    <i class="fas fa-file-signature me-3 header-icon"></i>Editor Interativo
+                </h1>
+                <p class="text-white-50 mb-0">
+                    Visualize e preencha o formulário digitalmente sem necessidade de download
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <a href="{{ url_for('forms.category', category=file_path.split('/')[0]) }}" class="btn btn-outline-light btn-rounded me-2 animate-fade-in-left">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                </a>
+                
+                {% if standard_fields and standard_fields|length > 0 %}
+                <div class="btn-group animate-fade-in-left me-2" role="group">
+                    <button type="button" class="btn btn-glass dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-magic me-1"></i> Campos Padrão
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end custom-dropdown">
+                        <li><h6 class="dropdown-header">Selecione o conjunto de campos</h6></li>
+                        {% for std_field in standard_fields %}
+                        <li>
+                            <button class="dropdown-item standard-fields-option" data-fields-id="{{ std_field.id }}">
+                                {% if std_field.is_default %}
+                                <i class="fas fa-star text-warning me-1"></i>
+                                {% else %}
+                                <i class="fas fa-sliders-h text-primary me-1"></i>
+                                {% endif %}
+                                {{ std_field.name }}
+                            </button>
+                        </li>
+                        {% endfor %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('forms.standard_fields_list') }}">
+                                <i class="fas fa-cog me-1"></i> Gerenciar Campos Padrão
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+                
+                {% if presets and presets|length > 0 %}
+                <div class="btn-group animate-fade-in-left" role="group">
+                    <button type="button" class="btn btn-glass preset-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bookmark me-1"></i> Aplicar Preset
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end custom-dropdown">
+                        <li><h6 class="dropdown-header">Predefinições salvas</h6></li>
+                        {% for preset in presets %}
+                        <li>
+                            <button class="dropdown-item preset-option" data-preset-id="{{ preset.id }}">
+                                {% if preset.is_default %}
+                                <i class="fas fa-star text-warning me-1"></i>
+                                {% else %}
+                                <i class="fas fa-bookmark text-primary me-1"></i>
+                                {% endif %}
+                                {{ preset.name }}
+                            </button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Coluna de visualização do documento -->
+        <div class="col-md-7 mb-4">
+            <div class="document-card animate-fade-in-up" style="animation-delay: 0.1s;">
+                <div class="document-header">
+                    <div class="doc-icon-wrapper">
+                        <i class="fas {% if file_ext.lower() == '.pdf' %}fa-file-pdf{% elif file_ext.lower() == '.docx' %}fa-file-word{% elif file_ext.lower() == '.xlsx' %}fa-file-excel{% else %}fa-file-alt{% endif %}"></i>
+                    </div>
+                    <div class="document-title">
+                        <h5 class="mb-0">{{ file_name }}</h5>
+                        <p class="text-white-50 mb-0 small">
+                            <i class="fas fa-clock me-1"></i> Modo de visualização em tempo real
+                        </p>
+                    </div>
+                    <div class="document-actions">
+                        <button type="button" class="btn-action btn-light" id="toggle-fullscreen" title="Tela cheia" data-bs-toggle="tooltip">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <a href="{{ url_for('forms.view_form', file_path=file_path) }}" target="_blank" class="btn-action btn-light" title="Abrir em nova aba" data-bs-toggle="tooltip">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="document-body">
+                    <!-- Container do documento com altura fixa e scroll -->
+                    <div class="document-preview-container">
+                        {% if file_ext.lower() == '.pdf' %}
+                        <!-- Visualização de PDF via iframe -->
+                        <iframe id="pdf-preview" class="pdf-viewer" src="{{ url_for('forms.view_form', file_path=file_path) }}" width="100%" height="100%"></iframe>
+                        {% elif file_ext.lower() == '.docx' %}
+                        <!-- Preview temporário de Word em HTML -->
+                        <div id="docx-preview" class="docx-preview text-center p-4">
+                            <div class="mb-3">
+                                <i class="fas fa-file-word text-primary display-4 animated-icon"></i>
+                            </div>
+                            <h4>Visualização de documento Word</h4>
+                            <p class="text-muted">Os campos detectados estão disponíveis para edição ao lado.</p>
+                            <div class="preview-actions mt-4">
+                                <a href="{{ url_for('forms.view_form', file_path=file_path) }}" target="_blank" class="btn btn-primary btn-rounded">
+                                    <i class="fas fa-eye me-1"></i> Visualizar documento
+                                </a>
+                            </div>
+                        </div>
+                        {% elif file_ext.lower() == '.xlsx' or file_ext.lower() == '.xls' %}
+                        <!-- Preview temporário de Excel em HTML -->
+                        <div id="excel-preview" class="excel-preview text-center p-4">
+                            <div class="mb-3">
+                                <i class="fas fa-file-excel text-success display-4 animated-icon"></i>
+                            </div>
+                            <h4>Visualização de planilha Excel</h4>
+                            <p class="text-muted">Os campos detectados estão disponíveis para edição ao lado.</p>
+                            <div class="preview-actions mt-4">
+                                <a href="{{ url_for('forms.view_form', file_path=file_path) }}" target="_blank" class="btn btn-success btn-rounded">
+                                    <i class="fas fa-eye me-1"></i> Visualizar planilha
+                                </a>
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- Formato não suportado -->
+                        <div class="unsupported-format text-center p-4">
+                            <div class="mb-3">
+                                <i class="fas fa-file-alt text-secondary display-4 animated-icon"></i>
+                            </div>
+                            <h4>Formato não suportado para visualização</h4>
+                            <p class="text-muted">O formato {{ file_ext }} não pode ser visualizado diretamente.</p>
+                            <div class="preview-actions mt-4">
+                                <a href="{{ url_for('forms.view_form', file_path=file_path) }}" target="_blank" class="btn btn-secondary btn-rounded">
+                                    <i class="fas fa-download me-1"></i> Baixar arquivo
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna de edição de campos -->
+        <div class="col-md-5 mb-4">
+            <div class="form-editor-card animate-fade-in-up" style="animation-delay: 0.2s;">
+                <div class="form-editor-header">
+                    <div class="editor-icon-wrapper">
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
+                    <div class="editor-title">
+                        <h5 class="mb-0">Campos para Preenchimento</h5>
+                        <p class="text-white-50 mb-0 small">
+                            <i class="fas fa-lightbulb me-1"></i> Edite para ver o resultado em tempo real
+                        </p>
+                    </div>
+                    <div class="editor-actions">
+                        <button type="button" class="btn-action btn-light" id="autofill-button" title="Auto preenchimento" data-bs-toggle="tooltip">
+                            <i class="fas fa-magic"></i>
+                        </button>
+                        <button type="button" class="btn-action btn-light" id="clear-all-fields" title="Limpar campos" data-bs-toggle="tooltip">
+                            <i class="fas fa-eraser"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-editor-body">
+                    <form id="interactive-form" action="{{ url_for('forms.download_filled_form', file_path=file_path) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="standard_fields_id" id="standard_fields_id" value="">
+                        
+                        {% if fields and fields|length > 0 %}
+                        <div class="form-tools mb-3">
+                            <div class="form-tools-container">
+                                <div class="search-box">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" id="field-search" class="form-control" placeholder="Pesquisar campos...">
+                                    <button type="button" class="btn-clear-search" id="clear-search">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="field-counter">
+                                    <span class="counter-badge">{{ fields|length }}</span>
+                                    <span class="counter-text">campos</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions mt-2">
+                                <div class="field-categories">
+                                    <span class="category-badge active" data-category="all">Todos</span>
+                                    <span class="category-badge" data-category="filled">Preenchidos</span>
+                                    <span class="category-badge" data-category="empty">Vazios</span>
+                                </div>
+                                
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="save-preset-button">
+                                    <i class="fas fa-save me-1"></i> Salvar Preset
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="interactive-fields-container">
+                            {% for field in fields %}
+                            <div class="field-card mb-3 animate-fade-in" style="animation-delay: {{ (loop.index0 * 0.05) + 0.2 }}s" data-field-id="{{ field.id }}">
+                                <div class="field-wrapper {% if field.id in ['empresa', 'produto', 'marca', 'lote', 'responsavel', 'departamento'] %}autofield{% endif %}">
+                                    <div class="field-content">
+                                        <div class="field-header">
+                                            <div class="field-icon-container">
+                                                <i class="field-icon fas 
+                                                {% if 'empresa' in field.id|lower or 'compan' in field.id|lower %}fa-building
+                                                {% elif 'produto' in field.id|lower or 'product' in field.id|lower %}fa-box
+                                                {% elif 'marca' in field.id|lower or 'brand' in field.id|lower %}fa-tag
+                                                {% elif 'lote' in field.id|lower or 'lot' in field.id|lower %}fa-barcode
+                                                {% elif 'data' in field.id|lower or 'date' in field.id|lower %}fa-calendar-alt
+                                                {% elif 'hora' in field.id|lower or 'time' in field.id|lower %}fa-clock
+                                                {% elif 'usuario' in field.id|lower or 'user' in field.id|lower %}fa-user
+                                                {% elif 'responsavel' in field.id|lower %}fa-user-tie
+                                                {% elif 'departamento' in field.id|lower %}fa-sitemap
+                                                {% elif 'telefone' in field.id|lower or 'fone' in field.id|lower %}fa-phone-alt
+                                                {% elif 'email' in field.id|lower %}fa-envelope
+                                                {% elif 'valor' in field.id|lower or 'preco' in field.id|lower %}fa-dollar-sign
+                                                {% elif 'quantidade' in field.id|lower or 'qtd' in field.id|lower %}fa-sort-amount-up
+                                                {% elif 'percent' in field.id|lower %}fa-percentage
+                                                {% elif 'check' in field.id|lower %}fa-check-square
+                                                {% elif 'obs' in field.id|lower or 'observ' in field.id|lower %}fa-comment-alt
+                                                {% else %}fa-pen
+                                                {% endif %}"></i>
+                                            </div>
+                                            <label class="field-label" for="field_{{ field.id }}">
+                                                {{ field.name }}
+                                                {% if field.id in ['empresa', 'produto', 'marca', 'lote', 'responsavel', 'departamento'] %}
+                                                <span class="badge bg-info badge-sm ms-1" title="Campo com preenchimento automático">Auto</span>
+                                                {% endif %}
+                                            </label>
+                                            <div class="field-actions">
+                                                <button type="button" class="btn-action-field btn-clear-field" title="Limpar campo" data-field-id="{{ field.id }}">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                                {% if field.location %}
+                                                <button type="button" class="btn-action-field btn-info-field" title="Informações do campo" data-bs-toggle="popover" data-bs-placement="left" data-bs-content="Localização: {{ field.location }}">
+                                                    <i class="fas fa-info"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="field-body">
+                                            {% if field.type == 'checkbox' %}
+                                            <div class="custom-checkbox">
+                                                <input type="checkbox" class="field-input" id="field_{{ field.id }}" name="field_{{ field.id }}" value="yes">
+                                                <label for="field_{{ field.id }}"></label>
+                                            </div>
+                                            {% elif field.type == 'select' %}
+                                            <div class="custom-select-container">
+                                                <select class="form-select field-input custom-select" id="field_{{ field.id }}" name="field_{{ field.id }}">
+                                                    <option value="">Selecione...</option>
+                                                    <option value="Sim">Sim</option>
+                                                    <option value="Não">Não</option>
+                                                    <option value="N/A">N/A</option>
+                                                </select>
+                                                <i class="fas fa-chevron-down select-arrow"></i>
+                                            </div>
+                                            {% else %}
+                                            <div class="custom-input-container">
+                                                <input type="text" class="form-control field-input custom-input" id="field_{{ field.id }}" name="field_{{ field.id }}" 
+                                                       placeholder="{{ field.name }}" value="{{ field.value }}">
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-actions-footer">
+                            <button type="submit" class="btn btn-primary btn-lg btn-submit">
+                                <i class="fas fa-file-download me-2"></i> Baixar Formulário Preenchido
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info shadow-sm">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-info-circle fa-2x animated-icon"></i>
+                                </div>
+                                <div>
+                                    <h5>Nenhum campo detectado</h5>
+                                    <p class="mb-0">Não foi possível detectar campos para preenchimento neste formulário. 
+                                    Tente outro formato ou entre em contato com o suporte.</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Salvar Preset -->
+<div class="modal fade" id="savePresetModal" tabindex="-1" aria-labelledby="savePresetModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="savePresetModalLabel">Salvar Predefinição</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="preset-form">
+                    <div class="mb-3">
+                        <label for="preset-name" class="form-label">Nome da Predefinição</label>
+                        <input type="text" class="form-control" id="preset-name" required placeholder="Ex: Controle Mensal - Janeiro 2025">
+                    </div>
+                    <div class="mb-3">
+                        <label for="preset-description" class="form-label">Descrição (opcional)</label>
+                        <textarea class="form-control" id="preset-description" rows="3" placeholder="Descreva o propósito desta predefinição"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="preset-default">
+                        <label class="form-check-label" for="preset-default">Definir como padrão para este formulário</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="save-preset-confirm">Salvar Predefinição</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Header do formulário interativo com gradiente */
+    .interactive-form-header {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(78, 115, 223, 0.15);
+    }
+    
+    .interactive-form-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
+    }
+    
+    .header-icon {
+        animation: pulse 1.5s infinite ease-in-out;
+    }
+    
+    /* Botões modernos com efeitos de vidro */
+    .btn-glass {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 50px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .btn-rounded {
+        border-radius: 50px;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+    
+    /* Cards de documentos modernos */
+    .document-card {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        background-color: white;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s ease;
+    }
+    
+    .document-header {
+        display: flex;
+        align-items: center;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+    }
+    
+    .doc-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.2);
+        margin-right: 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .document-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        border: none;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-action:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+    
+    .document-body {
+        flex-grow: 1;
+        position: relative;
+        padding: 1px;
+    }
+    
+    /* Containers com efeitos de profundidade */
+    .document-preview-container {
+        height: 70vh;
+        overflow: auto;
+        border: none;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(149, 157, 165, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .pdf-viewer {
+        border: none;
+        border-radius: 10px;
+    }
+    
+    /* Estilização moderna para os campos */
+    .interactive-fields-container {
+        max-height: 60vh;
+        overflow-y: auto;
+        padding-right: 10px;
+        padding-left: 5px;
+    }
+    
+    /* Melhorando Cards com efeitos modernos */
+    .field-card {
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    .field-card .card {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 6px rgba(32, 33, 36, 0.08);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    .field-card:hover .card {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(32, 33, 36, 0.15);
+        border-color: #4e73df;
+    }
+    
+    .field-card.active .card {
+        border-left: 4px solid #4CAF50;
+        box-shadow: 0 8px 16px rgba(76, 175, 80, 0.3);
+    }
+    
+    /* Elementos de texto melhorados */
+    .form-floating label {
+        color: #566a7f;
+        font-weight: 500;
+    }
+    
+    .field-input {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .field-input:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+        transform: scale(1.01);
+    }
+    
+    /* Ícones contextuais para cada tipo de campo */
+    .field-icon {
+        position: absolute;
+        right: 15px;
+        top: 12px;
+        color: #adb5bd;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+    
+    .field-card:hover .field-icon {
+        color: #4e73df;
+        transform: scale(1.2);
+    }
+    
+    /* Efeitos de destaque ao editar */
+    .field-editing {
+        animation: pulseHighlight 1.5s infinite;
+    }
+    
+    @keyframes pulseHighlight {
+        0% { box-shadow: 0 0 0 0 rgba(78, 115, 223, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(78, 115, 223, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(78, 115, 223, 0); }
+    }
+    
+    /* Botões com efeitos */
+    .btn {
+        border-radius: 8px;
+        text-transform: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        box-shadow: 0 2px 6px rgba(78, 115, 223, 0.4);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(78, 115, 223, 0.6);
+    }
+    
+    /* Estilos para scroll personalizado */
+    .interactive-fields-container::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .interactive-fields-container::-webkit-scrollbar-track {
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+    
+    .interactive-fields-container::-webkit-scrollbar-thumb {
+        background: #adb5bd;
+        border-radius: 10px;
+    }
+    
+    .interactive-fields-container::-webkit-scrollbar-thumb:hover {
+        background: #6c757d;
+    }
+    
+    /* Badges para status */
+    .field-status {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        z-index: 5;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .field-required {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .field-optional {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .field-filled {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    /* Animações para feedback */
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    .shake-animation {
+        animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    
+    /* Layout adaptativo */
+    @media (max-width: 768px) {
+        .document-preview-container {
+            height: 50vh;
+        }
+    }
+    
+    /* Tema de cores ajustado */
+    .bg-primary {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%) !important;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Referências aos elementos principais
+        const interactiveForm = document.getElementById('interactive-form');
+        const clearAllBtn = document.getElementById('clear-all-fields');
+        const autofillBtn = document.getElementById('autofill-button');
+        const savePresetBtn = document.getElementById('save-preset-button');
+        const savePresetConfirmBtn = document.getElementById('save-preset-confirm');
+        const presetOptions = document.querySelectorAll('.preset-option');
+        const standardFieldsOptions = document.querySelectorAll('.standard-fields-option');
+        const formFields = document.querySelectorAll('.field-input');
+        const fieldsContainer = document.querySelector('.interactive-fields-container');
+        const searchInput = document.getElementById('field-search');
+        const clearSearchBtn = document.getElementById('clear-search');
+        const categoryBadges = document.querySelectorAll('.category-badge');
+        const toggleFullscreen = document.getElementById('toggle-fullscreen');
+        const fieldCards = document.querySelectorAll('.field-card');
+        const btnClearFields = document.querySelectorAll('.btn-clear-field');
+        
+        // Inicialização de componentes Bootstrap
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+        
+        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+        const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl, {
+            html: true,
+            trigger: 'hover'
+        }));
+        
+        // Modal de salvar preset
+        const savePresetModal = new bootstrap.Modal(document.getElementById('savePresetModal'));
+        
+        // Adicionar ícones contextuais a cada campo
+        document.querySelectorAll('.field-card').forEach(card => {
+            const cardBody = card.querySelector('.card-body');
+            const input = card.querySelector('.field-input');
+            const inputType = input ? input.type : 'text';
+            
+            // Criar elemento de ícone
+            const iconEl = document.createElement('div');
+            iconEl.className = 'field-icon';
+            
+            // Definir ícone com base no tipo de campo
+            let iconClass = 'fa-keyboard';
+            if (inputType === 'checkbox') {
+                iconClass = 'fa-check-square';
+            } else if (inputType === 'select-one') {
+                iconClass = 'fa-list';
+            } else if (inputType === 'number') {
+                iconClass = 'fa-hashtag';
+            } else if (inputType === 'date') {
+                iconClass = 'fa-calendar-alt';
+            } else if (inputType === 'time') {
+                iconClass = 'fa-clock';
+            } else if (inputType === 'email') {
+                iconClass = 'fa-envelope';
+            } else if (inputType === 'tel') {
+                iconClass = 'fa-phone';
+            }
+            
+            // Adicionar ícone ao card
+            iconEl.innerHTML = `<i class="fas ${iconClass}"></i>`;
+            cardBody.appendChild(iconEl);
+            
+            // Adicionar badge de status (opcional/preenchido)
+            const badge = document.createElement('div');
+            badge.className = 'field-status field-optional';
+            badge.innerHTML = '<i class="fas fa-circle"></i>';
+            card.querySelector('.card').appendChild(badge);
+            
+            // Adicionar eventos de animação e feedback
+            if (input) {
+                // Animar quando o campo recebe foco
+                input.addEventListener('focus', () => {
+                    card.classList.add('active');
+                    iconEl.style.color = '#4e73df';
+                    iconEl.style.transform = 'scale(1.2)';
+                });
+                
+                // Restaurar quando perde o foco
+                input.addEventListener('blur', () => {
+                    card.classList.remove('active');
+                    iconEl.style.color = '';
+                    iconEl.style.transform = '';
+                    
+                    // Atualizar badge de status
+                    const hasValue = input.type === 'checkbox' ? input.checked : input.value.trim() !== '';
+                    if (hasValue) {
+                        badge.className = 'field-status field-filled';
+                        badge.innerHTML = '<i class="fas fa-check"></i>';
+                    } else {
+                        badge.className = 'field-status field-optional';
+                        badge.innerHTML = '<i class="fas fa-circle"></i>';
+                    }
+                });
+                
+                // Verificar se já está preenchido ao carregar
+                if ((input.type === 'checkbox' && input.checked) || 
+                    (input.type !== 'checkbox' && input.value.trim() !== '')) {
+                    badge.className = 'field-status field-filled';
+                    badge.innerHTML = '<i class="fas fa-check"></i>';
+                }
+            }
+        });
+        
+        // Função para rolar suavemente para o campo ao clicar
+        function scrollToField(fieldCard) {
+            // Se o container tiver rolagem
+            if (fieldsContainer) {
+                const containerTop = fieldsContainer.getBoundingClientRect().top;
+                const fieldTop = fieldCard.getBoundingClientRect().top;
+                const scrollOffset = fieldTop - containerTop - 20; // 20px de margem
+                
+                fieldsContainer.scrollBy({
+                    top: scrollOffset,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        // Adicionar evento de clique nos cartões para facilitar edição
+        document.querySelectorAll('.field-card').forEach(card => {
+            card.addEventListener('click', event => {
+                // Não prosseguir se o clique for direto no input
+                if (event.target.classList.contains('field-input')) return;
+                
+                // Focar no input dentro do card
+                const input = card.querySelector('.field-input');
+                if (input) {
+                    scrollToField(card);
+                    input.focus();
+                    
+                    // Destacar brevemente o cartão
+                    card.querySelector('.card').classList.add('field-editing');
+                    setTimeout(() => {
+                        card.querySelector('.card').classList.remove('field-editing');
+                    }, 1500);
+                }
+            });
+        });
+        
+        // Limpar todos os campos com animação 
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', function() {
+                if (confirm('Tem certeza que deseja limpar todos os campos?')) {
+                    // Animar limpeza dos campos
+                    document.querySelectorAll('.field-input').forEach((input, index) => {
+                        setTimeout(() => {
+                            // Animar o card antes de limpar
+                            const card = input.closest('.field-card');
+                            card.classList.add('shake-animation');
+                            
+                            setTimeout(() => {
+                                // Limpar o campo
+                                if (input.type === 'checkbox') {
+                                    input.checked = false;
+                                } else {
+                                    input.value = '';
+                                }
+                                
+                                // Atualizar badge
+                                const badge = card.querySelector('.field-status');
+                                if (badge) {
+                                    badge.className = 'field-status field-optional';
+                                    badge.innerHTML = '<i class="fas fa-circle"></i>';
+                                }
+                                
+                                // Remover animação
+                                card.classList.remove('shake-animation');
+                            }, 300);
+                        }, index * 50); // Efeito cascata
+                    });
+                    
+                    // Animar o botão
+                    ZelopackAnimations.pulse(clearAllBtn);
+                }
+            });
+        }
+        
+        // Abrir modal para salvar preset com efeito
+        if (savePresetBtn) {
+            savePresetBtn.addEventListener('click', function() {
+                ZelopackAnimations.pulse(savePresetBtn);
+                savePresetModal.show();
+            });
+        }
+        
+        // Salvar preset
+        if (savePresetConfirmBtn) {
+            savePresetConfirmBtn.addEventListener('click', function() {
+                const presetName = document.getElementById('preset-name').value;
+                const presetDescription = document.getElementById('preset-description').value;
+                const isDefault = document.getElementById('preset-default').checked;
+                
+                if (!presetName) {
+                    alert('Por favor, informe um nome para a predefinição.');
+                    return;
+                }
+                
+                // Coletar os valores dos campos
+                const formData = {};
+                document.querySelectorAll('.field-input').forEach(input => {
+                    const fieldId = input.id.replace('field_', '');
+                    if (input.type === 'checkbox') {
+                        formData[fieldId] = input.checked ? 'Sim' : 'Não';
+                    } else {
+                        formData[fieldId] = input.value;
+                    }
+                });
+                
+                // Mostrar carregamento
+                ZelopackAnimations.showLoading('Salvando predefinição...');
+                
+                // Enviar dados para o servidor via fetch
+                fetch('{{ url_for("forms.create_preset_ajax", file_path=file_path) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        name: presetName,
+                        description: presetDescription,
+                        is_default: isDefault,
+                        data: formData
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    ZelopackAnimations.hideLoading();
+                    
+                    if (data.success) {
+                        // Fechar o modal
+                        savePresetModal.hide();
+                        
+                        // Exibir mensagem de sucesso
+                        ZelopackAnimations.showMessage(data.message, 'success');
+                        
+                        // Recarregar a página após um breve atraso
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        // Exibir mensagem de erro
+                        ZelopackAnimations.showMessage(`Erro: ${data.message}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    ZelopackAnimations.hideLoading();
+                    console.error('Erro ao salvar predefinição:', error);
+                    ZelopackAnimations.showMessage('Erro ao salvar predefinição. Tente novamente.', 'error');
+                });
+            });
+        }
+        
+        // Aplicar presets
+        if (presetOptions.length > 0) {
+            presetOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const presetId = this.dataset.presetId;
+                    
+                    // Mostrar carregamento
+                    ZelopackAnimations.showLoading('Carregando predefinição...');
+                    
+                    // Buscar os dados da predefinição via AJAX
+                    fetch(`/forms/api/preset/${presetId}`, {
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            ZelopackAnimations.hideLoading();
+                            
+                            if (data.success) {
+                                const preset = data.preset;
+                                
+                                // Aplicar os valores aos campos
+                                for (const [fieldId, value] of Object.entries(preset.data)) {
+                                    const fieldInput = document.getElementById(`field_${fieldId}`);
+                                    if (fieldInput) {
+                                        if (fieldInput.type === 'checkbox') {
+                                            fieldInput.checked = (value === 'Sim' || value === 'yes' || value === true);
+                                        } else {
+                                            fieldInput.value = value;
+                                        }
+                                        // Animar o campo preenchido
+                                        ZelopackAnimations.pulseElement(fieldInput);
+                                    }
+                                }
+                                
+                                // Mensagem de sucesso
+                                ZelopackAnimations.showMessage(`Predefinição "${preset.name}" aplicada com sucesso!`, 'success');
+                            } else {
+                                ZelopackAnimations.showMessage(`Erro: ${data.message}`, 'error');
+                            }
+                        })
+                        .catch(error => {
+                            ZelopackAnimations.hideLoading();
+                            console.error('Erro ao carregar predefinição:', error);
+                            ZelopackAnimations.showMessage('Erro ao carregar predefinição. Tente novamente.', 'error');
+                        });
+                });
+            });
+        }
+        
+        // Animação ao editar campos
+        formFields.forEach(field => {
+            field.addEventListener('focus', function() {
+                const fieldCard = this.closest('.field-card');
+                if (fieldCard) {
+                    fieldCard.classList.add('animate-pulse');
+                    setTimeout(() => {
+                        fieldCard.classList.remove('animate-pulse');
+                    }, 1000);
+                }
+            });
+        });
+        
+        // Envio do formulário com indicação visual
+        if (interactiveForm) {
+            interactiveForm.addEventListener('submit', function() {
+                ZelopackAnimations.showLoading('Gerando formulário preenchido...');
+            });
+        }
+    });
+</script>
+{% endblock %}

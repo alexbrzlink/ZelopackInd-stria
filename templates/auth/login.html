@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+<!-- Adicionar particles.js para o fundo interativo -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div id="login-particles" class="particles-js position-absolute w-100 h-100"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7 col-sm-9">
+                <div class="login-card">
+                    <div class="login-header">
+                        <h3><i class="fas fa-lock me-2"></i> Acesso ao Sistema</h3>
+                    </div>
+                    
+                    <div class="login-body">
+                        <div class="login-brand">
+                            <h1>ZELOPACK</h1>
+                        </div>
+                        
+                        <div class="login-title">
+                            Sistema de Gerenciamento de Laudos
+                        </div>
+                        
+                        <!-- Área para mensagens de erro dinâmicas -->
+                        <div id="login-messages">
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                                {% if messages %}
+                                    {% for category, message in messages %}
+                                        <div class="alert alert-{{ category }}">
+                                            {% if category == 'danger' %}
+                                                <i class="fas fa-exclamation-circle me-2"></i>
+                                            {% elif category == 'success' %}
+                                                <i class="fas fa-check-circle me-2"></i>
+                                            {% elif category == 'warning' %}
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                            {% else %}
+                                                <i class="fas fa-info-circle me-2"></i>
+                                            {% endif %}
+                                            {{ message|safe }}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        
+                        <form method="POST" action="" id="login-form" class="form-animate-in">
+                            <!-- Este campo é necessário para proteção CSRF -->
+                            {{ form.hidden_tag() }}
+                            <div class="form-floating position-relative">
+                                {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), placeholder="Nome de Usuário", id="username", required=true, autocomplete="username") }}
+                                <i class="fas fa-user input-icon"></i>
+                                {{ form.username.label }}
+                                {% for error in form.username.errors %}
+                                    <div class="invalid-feedback">
+                                        <i class="fas fa-exclamation-circle me-1"></i> {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="form-floating position-relative">
+                                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Senha", id="password", required=true, autocomplete="current-password") }}
+                                <i class="fas fa-key input-icon"></i>
+                                {{ form.password.label }}
+                                {% for error in form.password.errors %}
+                                    <div class="invalid-feedback">
+                                        <i class="fas fa-exclamation-circle me-1"></i> {{ error }}
+                                    </div>
+                                {% endfor %}
+                                <div class="password-hint small text-muted mt-1">Digite a senha fornecida pelo administrador</div>
+                            </div>
+                            
+                            <div class="form-check mb-3 mt-3">
+                                {{ form.remember_me(class="form-check-input") }}
+                                {{ form.remember_me.label(class="form-check-label") }}
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                {{ form.submit(class="btn btn-primary btn-lg login-button pulse-effect", id="submit") }}
+                            </div>
+                        </form>
+                        
+                        <div class="forgot-password">
+                            <a href="{{ url_for('auth.reset_password_request') }}">
+                                <i class="fas fa-question-circle me-1"></i> Esqueceu sua senha?
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="login-footer">
+                        <small>&copy; {{ current_year }} ZELOPACK. Todos os direitos reservados.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}

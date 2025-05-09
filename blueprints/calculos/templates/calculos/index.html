@@ -1,0 +1,783 @@
+{% extends "base.html" %}
+
+{% block title %}ZeloPack - Cálculos Técnicos{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* Layout principal */
+    .container-calculos {
+        display: flex;
+        height: calc(100vh - 60px);
+        margin-top: -20px;
+        background-color: #f8f9fa;
+    }
+    
+    /* Sidebar */
+    .sidebar-calculos {
+        width: 280px;
+        background-color: #fff;
+        border-right: 1px solid #e9ecef;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        overflow-y: auto;
+        z-index: 100;
+    }
+    
+    .sidebar-header {
+        padding: 20px 15px;
+        border-bottom: 1px solid #e9ecef;
+        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+        color: white;
+    }
+    
+    .sidebar-search {
+        padding: 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .search-input {
+        border-radius: 20px;
+        padding-left: 35px;
+        position: relative;
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 25px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        z-index: 10;
+    }
+    
+    .calculo-list {
+        padding: 0;
+        list-style-type: none;
+        margin: 0;
+    }
+    
+    .calculo-category {
+        padding: 12px 15px;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .calculo-category:hover {
+        background-color: #e9ecef;
+    }
+    
+    .calculo-category i:first-child {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+        color: #0d6efd;
+    }
+    
+    .calculo-item {
+        padding: 10px 15px 10px 40px;
+        color: #495057;
+        border-bottom: 1px solid #e9ecef;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+    }
+    
+    .calculo-item:hover {
+        background-color: #f1f3f5;
+    }
+    
+    .calculo-item.active {
+        background-color: #e7f1ff;
+        color: #0d6efd;
+        border-left: 3px solid #0d6efd;
+    }
+    
+    .calculo-item i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+        color: #6c757d;
+    }
+    
+    .calculo-item.active i {
+        color: #0d6efd;
+    }
+    
+    /* Conteúdo principal */
+    .content-calculos {
+        flex: 1;
+        padding: 20px 30px;
+        overflow-y: auto;
+        background-color: white;
+        position: relative;
+    }
+    
+    .calculo-header {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .calculo-panel {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .calculo-panel.active {
+        display: block;
+        opacity: 1;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .calculo-card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+    
+    .calculo-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .calculo-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        background-color: #0d6efd;
+        color: #fff;
+        border-radius: 10px;
+        margin-right: 15px;
+    }
+    
+    .calculo-name {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #343a40;
+        margin: 0;
+    }
+    
+    .calculo-subtitle {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .calculo-formula {
+        background-color: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+        padding: 15px;
+        margin-bottom: 20px;
+        font-family: monospace;
+        color: #495057;
+    }
+    
+    .calculo-form .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .results-area {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        text-align: center;
+        display: none;
+    }
+    
+    .results-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0d6efd;
+        margin: 10px 0;
+    }
+    
+    .results-unit {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+    
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    /* Animações e transições */
+    .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+        border-color: #0a58ca;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-calculos">
+    <!-- Sidebar para seleção de cálculos -->
+    <div class="sidebar-calculos">
+        <div class="sidebar-header">
+            <h5 class="mb-0"><i class="fas fa-calculator me-2"></i> Cálculos Técnicos</h5>
+        </div>
+        
+        <div class="sidebar-search position-relative">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="form-control search-input" id="searchCalculo" placeholder="Buscar cálculo...">
+        </div>
+        
+        <ul class="calculo-list" id="calculoList">
+            <!-- Categoria: Produção -->
+            <li class="calculo-category" data-category="producao">
+                <div><i class="fas fa-industry"></i> Produção</div>
+                <i class="fas fa-chevron-down"></i>
+            </li>
+            <li class="calculo-item active" data-target="producao-200g">
+                <i class="fas fa-balance-scale"></i> Produção 200g
+            </li>
+            <li class="calculo-item" data-target="volume-producao">
+                <i class="fas fa-tint"></i> Volume de Produção
+            </li>
+            <li class="calculo-item" data-target="rendimento">
+                <i class="fas fa-percentage"></i> Rendimento
+            </li>
+            
+            <!-- Categoria: Laboratório -->
+            <li class="calculo-category" data-category="laboratorio">
+                <div><i class="fas fa-flask"></i> Laboratório</div>
+                <i class="fas fa-chevron-down"></i>
+            </li>
+            <li class="calculo-item" data-target="brix-padrao">
+                <i class="fas fa-thermometer-half"></i> Brix Padrão
+            </li>
+            <li class="calculo-item" data-target="diluicao">
+                <i class="fas fa-water"></i> Diluição
+            </li>
+            <li class="calculo-item" data-target="acidez">
+                <i class="fas fa-vial"></i> Conversão de Acidez
+            </li>
+            
+            <!-- Categoria: Finalização -->
+            <li class="calculo-category" data-category="finalizacao">
+                <div><i class="fas fa-tasks"></i> Finalização</div>
+                <i class="fas fa-chevron-down"></i>
+            </li>
+            <li class="calculo-item" data-target="finalizacao-tanque">
+                <i class="fas fa-database"></i> Finalização de Tanque
+            </li>
+            <li class="calculo-item" data-target="mistura-tanques">
+                <i class="fas fa-exchange-alt"></i> Mistura de Tanques
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Conteúdo principal - mostra apenas um cálculo por vez -->
+    <div class="content-calculos">
+        <!-- Navegação breadcrumb -->
+        <div class="calculo-header">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('reports.index') }}">ZeloPack</a></li>
+                    <li class="breadcrumb-item">Cálculos Técnicos</li>
+                    <li class="breadcrumb-item active" id="calculo-atual">Produção 200g</li>
+                </ol>
+            </nav>
+        </div>
+        
+        <!-- Painel de Produção 200g - Visível por padrão -->
+        <div class="calculo-panel active" id="panel-producao-200g">
+            <div class="calculo-card">
+                <div class="calculo-title">
+                    <div class="calculo-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <div>
+                        <h3 class="calculo-name">Produção 200g</h3>
+                        <p class="calculo-subtitle">Cálculo de peso líquido de embalagens</p>
+                    </div>
+                </div>
+                
+                <div class="calculo-formula">
+                    <strong>Fórmula:</strong> Peso Líquido = Peso Bruto - Tara
+                </div>
+                
+                <p class="mb-4">Este cálculo determina o peso líquido das embalagens de 200g, subtraindo a tara (peso da embalagem vazia) do peso bruto total.</p>
+                
+                <form id="form-producao-200g" class="calculo-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="peso_bruto">Peso Bruto (g)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-weight"></i></span>
+                                    <input type="number" class="form-control" id="peso_bruto" step="0.01" placeholder="Informe o peso bruto" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="tara">Tara (g)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-box"></i></span>
+                                    <input type="number" class="form-control" id="tara" step="0.01" placeholder="Informe a tara" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid col-md-6 mx-auto">
+                        <button type="button" class="btn btn-primary mt-3" onclick="calcularProducao200g()">
+                            <i class="fas fa-calculator me-2"></i>Calcular
+                        </button>
+                    </div>
+                    
+                    <div class="results-area" id="results-producao-200g">
+                        <h5>Resultado</h5>
+                        <div class="results-value" id="valor-producao-200g">0.00</div>
+                        <div class="results-unit">gramas</div>
+                        
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="copiarResultado('valor-producao-200g', 'g')">
+                                <i class="fas fa-copy me-1"></i>Copiar
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="limparCalculadora('form-producao-200g', 'results-producao-200g')">
+                                <i class="fas fa-redo me-1"></i>Limpar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Painel de Volume de Produção - Oculto por padrão -->
+        <div class="calculo-panel" id="panel-volume-producao">
+            <div class="calculo-card">
+                <div class="calculo-title">
+                    <div class="calculo-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <div>
+                        <h3 class="calculo-name">Volume de Produção</h3>
+                        <p class="calculo-subtitle">Cálculo do volume com base no peso e densidade</p>
+                    </div>
+                </div>
+                
+                <div class="calculo-formula">
+                    <strong>Fórmula:</strong> Volume (L) = Massa (kg) / Densidade (kg/L)
+                </div>
+                
+                <p class="mb-4">Calcula o volume de produção com base no peso total e na densidade do produto.</p>
+                
+                <form id="form-volume-producao" class="calculo-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="massa">Massa (kg)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-weight"></i></span>
+                                    <input type="number" class="form-control" id="massa" step="0.01" placeholder="Informe a massa" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="densidade">Densidade (kg/L)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-flask"></i></span>
+                                    <input type="number" class="form-control" id="densidade" step="0.001" placeholder="Informe a densidade" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid col-md-6 mx-auto">
+                        <button type="button" class="btn btn-primary mt-3" onclick="calcularVolumeProducao()">
+                            <i class="fas fa-calculator me-2"></i>Calcular
+                        </button>
+                    </div>
+                    
+                    <div class="results-area" id="results-volume-producao">
+                        <h5>Resultado</h5>
+                        <div class="results-value" id="valor-volume-producao">0.00</div>
+                        <div class="results-unit">litros</div>
+                        
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="copiarResultado('valor-volume-producao', 'L')">
+                                <i class="fas fa-copy me-1"></i>Copiar
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="limparCalculadora('form-volume-producao', 'results-volume-producao')">
+                                <i class="fas fa-redo me-1"></i>Limpar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Painel de Brix Padrão - Oculto por padrão -->
+        <div class="calculo-panel" id="panel-brix-padrao">
+            <div class="calculo-card">
+                <div class="calculo-title">
+                    <div class="calculo-icon">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <div>
+                        <h3 class="calculo-name">Brix Padrão</h3>
+                        <p class="calculo-subtitle">Cálculo de correção de Brix</p>
+                    </div>
+                </div>
+                
+                <div class="calculo-formula">
+                    <strong>Fórmula:</strong> Brix Corrigido = Brix Atual × Fator de Correção
+                </div>
+                
+                <p class="mb-4">Calcula o Brix padrão corrigido com base no valor medido e no fator de correção.</p>
+                
+                <form id="form-brix-padrao" class="calculo-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="brix_atual">Brix Atual (°Bx)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-percentage"></i></span>
+                                    <input type="number" class="form-control" id="brix_atual" step="0.1" placeholder="Informe o Brix atual" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="fator_correcao">Fator de Correção</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-sync-alt"></i></span>
+                                    <input type="number" class="form-control" id="fator_correcao" step="0.001" value="1.000" placeholder="Informe o fator" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid col-md-6 mx-auto">
+                        <button type="button" class="btn btn-primary mt-3" onclick="calcularBrixPadrao()">
+                            <i class="fas fa-calculator me-2"></i>Calcular
+                        </button>
+                    </div>
+                    
+                    <div class="results-area" id="results-brix-padrao">
+                        <h5>Resultado</h5>
+                        <div class="results-value" id="valor-brix-padrao">0.00</div>
+                        <div class="results-unit">°Brix</div>
+                        
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="copiarResultado('valor-brix-padrao', '°Bx')">
+                                <i class="fas fa-copy me-1"></i>Copiar
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="limparCalculadora('form-brix-padrao', 'results-brix-padrao')">
+                                <i class="fas fa-redo me-1"></i>Limpar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Painel de Finalização de Tanque - Oculto por padrão -->
+        <div class="calculo-panel" id="panel-finalizacao-tanque">
+            <div class="calculo-card">
+                <div class="calculo-title">
+                    <div class="calculo-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div>
+                        <h3 class="calculo-name">Finalização de Tanque</h3>
+                        <p class="calculo-subtitle">Cálculo de água necessária para diluição</p>
+                    </div>
+                </div>
+                
+                <div class="calculo-formula">
+                    <strong>Fórmula:</strong> Água (L) = Volume Concentrado × ((Brix Concentrado ÷ Brix Desejado) - 1)
+                </div>
+                
+                <p class="mb-4">Calcula a quantidade de água necessária para diluir um concentrado a um Brix específico.</p>
+                
+                <form id="form-finalizacao-tanque" class="calculo-form">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label" for="volume_concentrado">Volume do Concentrado (L)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-flask"></i></span>
+                                    <input type="number" class="form-control" id="volume_concentrado" step="0.1" placeholder="Volume" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label" for="brix_concentrado">Brix do Concentrado (°Bx)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-percentage"></i></span>
+                                    <input type="number" class="form-control" id="brix_concentrado" step="0.1" placeholder="Brix inicial" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label" for="brix_desejado">Brix Desejado (°Bx)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-bullseye"></i></span>
+                                    <input type="number" class="form-control" id="brix_desejado" step="0.1" placeholder="Brix final" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid col-md-6 mx-auto">
+                        <button type="button" class="btn btn-primary mt-3" onclick="calcularFinalizacaoTanque()">
+                            <i class="fas fa-calculator me-2"></i>Calcular
+                        </button>
+                    </div>
+                    
+                    <div class="results-area" id="results-finalizacao-tanque">
+                        <h5>Resultados</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Água Necessária</h6>
+                                <div class="results-value" id="valor-agua-necessaria">0.00</div>
+                                <div class="results-unit">litros</div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Volume Final</h6>
+                                <div class="results-value" id="valor-volume-final">0.00</div>
+                                <div class="results-unit">litros</div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="copiarResultadoMultiplo('finalizacao-tanque')">
+                                <i class="fas fa-copy me-1"></i>Copiar
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="limparCalculadora('form-finalizacao-tanque', 'results-finalizacao-tanque')">
+                                <i class="fas fa-redo me-1"></i>Limpar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Outros painéis de cálculo seriam adicionados aqui -->
+    </div>
+</div>
+
+<script>
+    // Alternar entre cálculos ao clicar nos itens da sidebar
+    document.querySelectorAll('.calculo-item').forEach(item => {
+        item.addEventListener('click', function() {
+            // Atualizar item ativo
+            document.querySelectorAll('.calculo-item').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Obter o alvo
+            const target = this.getAttribute('data-target');
+            
+            // Mostrar o painel correspondente
+            document.querySelectorAll('.calculo-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById('panel-' + target).classList.add('active');
+            
+            // Atualizar breadcrumb
+            document.getElementById('calculo-atual').textContent = this.textContent.trim();
+        });
+    });
+    
+    // Expandir/Recolher categorias
+    document.querySelectorAll('.calculo-category').forEach(category => {
+        category.addEventListener('click', function() {
+            const categoryName = this.getAttribute('data-category');
+            let nextElement = this.nextElementSibling;
+            
+            // Toggle chevron
+            const chevron = this.querySelector('.fas.fa-chevron-down, .fas.fa-chevron-right');
+            if (chevron.classList.contains('fa-chevron-down')) {
+                chevron.classList.replace('fa-chevron-down', 'fa-chevron-right');
+            } else {
+                chevron.classList.replace('fa-chevron-right', 'fa-chevron-down');
+            }
+            
+            // Toggle visibility
+            while (nextElement && !nextElement.classList.contains('calculo-category')) {
+                if (nextElement.style.display === 'none') {
+                    nextElement.style.display = 'flex';
+                } else {
+                    nextElement.style.display = 'none';
+                }
+                nextElement = nextElement.nextElementSibling;
+            }
+        });
+    });
+    
+    // Pesquisa de cálculos
+    document.getElementById('searchCalculo').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        document.querySelectorAll('.calculo-item').forEach(item => {
+            const itemText = item.textContent.toLowerCase();
+            if (itemText.includes(searchTerm)) {
+                item.style.display = 'flex';
+                
+                // Encontrar e expandir a categoria pai
+                let prevElement = item.previousElementSibling;
+                while (prevElement && !prevElement.classList.contains('calculo-category')) {
+                    prevElement = prevElement.previousElementSibling;
+                }
+                
+                if (prevElement && prevElement.classList.contains('calculo-category')) {
+                    const chevron = prevElement.querySelector('.fas');
+                    if (chevron.classList.contains('fa-chevron-right')) {
+                        chevron.classList.replace('fa-chevron-right', 'fa-chevron-down');
+                    }
+                }
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+    
+    // Funções para os cálculos
+    function calcularProducao200g() {
+        const pesoBruto = parseFloat(document.getElementById('peso_bruto').value);
+        const tara = parseFloat(document.getElementById('tara').value);
+        
+        if (isNaN(pesoBruto) || isNaN(tara)) {
+            alert('Por favor, preencha todos os campos com valores numéricos.');
+            return;
+        }
+        
+        const pesoLiquido = pesoBruto - tara;
+        
+        document.getElementById('valor-producao-200g').textContent = pesoLiquido.toFixed(2);
+        document.getElementById('results-producao-200g').style.display = 'block';
+    }
+    
+    function calcularVolumeProducao() {
+        const massa = parseFloat(document.getElementById('massa').value);
+        const densidade = parseFloat(document.getElementById('densidade').value);
+        
+        if (isNaN(massa) || isNaN(densidade) || densidade === 0) {
+            alert('Por favor, preencha todos os campos com valores numéricos válidos. A densidade não pode ser zero.');
+            return;
+        }
+        
+        const volume = massa / densidade;
+        
+        document.getElementById('valor-volume-producao').textContent = volume.toFixed(2);
+        document.getElementById('results-volume-producao').style.display = 'block';
+    }
+    
+    function calcularBrixPadrao() {
+        const brixAtual = parseFloat(document.getElementById('brix_atual').value);
+        const fatorCorrecao = parseFloat(document.getElementById('fator_correcao').value);
+        
+        if (isNaN(brixAtual) || isNaN(fatorCorrecao)) {
+            alert('Por favor, preencha todos os campos com valores numéricos.');
+            return;
+        }
+        
+        const brixCorrigido = brixAtual * fatorCorrecao;
+        
+        document.getElementById('valor-brix-padrao').textContent = brixCorrigido.toFixed(2);
+        document.getElementById('results-brix-padrao').style.display = 'block';
+    }
+    
+    function calcularFinalizacaoTanque() {
+        const volumeConcentrado = parseFloat(document.getElementById('volume_concentrado').value);
+        const brixConcentrado = parseFloat(document.getElementById('brix_concentrado').value);
+        const brixDesejado = parseFloat(document.getElementById('brix_desejado').value);
+        
+        if (isNaN(volumeConcentrado) || isNaN(brixConcentrado) || isNaN(brixDesejado) || brixDesejado === 0) {
+            alert('Por favor, preencha todos os campos com valores numéricos válidos. O Brix desejado não pode ser zero.');
+            return;
+        }
+        
+        if (brixConcentrado <= brixDesejado) {
+            alert('O Brix do concentrado deve ser maior que o Brix desejado para diluição.');
+            return;
+        }
+        
+        const aguaNecessaria = volumeConcentrado * ((brixConcentrado / brixDesejado) - 1);
+        const volumeFinal = volumeConcentrado + aguaNecessaria;
+        
+        document.getElementById('valor-agua-necessaria').textContent = aguaNecessaria.toFixed(2);
+        document.getElementById('valor-volume-final').textContent = volumeFinal.toFixed(2);
+        document.getElementById('results-finalizacao-tanque').style.display = 'block';
+    }
+    
+    function copiarResultado(elementId, unidade) {
+        const valor = document.getElementById(elementId).textContent;
+        const textoCompleto = valor + ' ' + unidade;
+        
+        navigator.clipboard.writeText(textoCompleto).then(() => {
+            alert('Resultado copiado: ' + textoCompleto);
+        }).catch(err => {
+            console.error('Erro ao copiar: ', err);
+        });
+    }
+    
+    function copiarResultadoMultiplo(calculoId) {
+        let texto = '';
+        
+        if (calculoId === 'finalizacao-tanque') {
+            const aguaNecessaria = document.getElementById('valor-agua-necessaria').textContent;
+            const volumeFinal = document.getElementById('valor-volume-final').textContent;
+            texto = `Água Necessária: ${aguaNecessaria} L\nVolume Final: ${volumeFinal} L`;
+        }
+        
+        navigator.clipboard.writeText(texto).then(() => {
+            alert('Resultados copiados para a área de transferência.');
+        }).catch(err => {
+            console.error('Erro ao copiar: ', err);
+        });
+    }
+    
+    function limparCalculadora(formId, resultadoId) {
+        document.getElementById(formId).reset();
+        document.getElementById(resultadoId).style.display = 'none';
+    }
+</script>
+{% endblock %}

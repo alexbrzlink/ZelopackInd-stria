@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        /* Cores da paleta Zelopack */
+        :root {
+            --primary-color: #0073b7; /* Azul turquesa principal */
+            --primary-dark: #005991;  /* Azul turquesa escuro */
+            --primary-light: #e3f2fd; /* Azul turquesa claro */
+            --secondary-color: #00B5B8; /* Azul turquesa secundário */
+            --accent-color: #00897b; /* Verde azulado */
+            --text-color: #333333;
+            --text-light: #666666;
+            --background-light: #f9f9f9;
+            --border-color: #e0e0e0;
+        }
+        
+        /* Reset e estilos base */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: white;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Estilos para visualização na tela (não impressão) */
+        .screen-only {
+            background-color: var(--background-light);
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Cabeçalho do documento */
+        .document-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+            position: relative;
+        }
+        
+        .document-header:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border-radius: 3px 3px 0 0;
+        }
+        
+        .company-logo {
+            margin-bottom: 10px;
+        }
+        
+        .document-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .document-meta {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            margin: 0 10px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .meta-item i {
+            margin-right: 5px;
+            color: var(--primary-color);
+        }
+        
+        /* Conteúdo do documento */
+        .document-content {
+            margin-bottom: 30px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Estilos para diferentes tipos de conteúdo */
+        .pdf-container {
+            width: 100%;
+            height: 70vh;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .image-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .document-image {
+            max-width: 100%;
+            max-height: 70vh;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+        
+        /* Mensagens e alertas */
+        .error-message {
+            background-color: #ffe6e6;
+            color: #d32f2f;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #d32f2f;
+        }
+        
+        .info-message {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        /* Botões e links */
+        .action-button {
+            display: inline-block;
+            margin: 10px 5px;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .action-button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .action-button.secondary {
+            background-color: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .action-button.secondary:hover {
+            background-color: var(--primary-light);
+        }
+        
+        /* Barra de ferramentas */
+        .toolbar {
+            display: flex;
+            justify-content: center;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            background-color: var(--primary-light);
+            border-radius: 5px;
+        }
+        
+        /* Rodapé do documento */
+        .document-footer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-light);
+            margin-top: 30px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+        
+        .footer-logo {
+            max-width: 100px;
+            margin-bottom: 10px;
+        }
+        
+        /* Tabelas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        /* Regras específicas para impressão - Seguindo tendências modernas */
+        @media print {
+            /* Configurações da página */
+            @page {
+                margin: 0;
+                size: {{ paper_size|default('a4') }} portrait;
+                /* Evitar cabeçalhos e rodapés do navegador */
+                marks: none;
+            }
+            
+            /* Ajustes globais */
+            html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                background-color: white;
+                -webkit-print-color-adjust: exact !important; /* Chrome, Safari */
+                color-adjust: exact !important; /* Firefox */
+                print-color-adjust: exact !important; /* Futura especificação */
+            }
+            
+            /* Remover todos os elementos apenas para tela e deixar apenas o documento */
+            .screen-only {
+                background: none;
+                padding: 0;
+                margin: 0;
+                max-width: 100%;
+                box-shadow: none;
+            }
+            
+            /* Remover TODOS os elementos de interface e mostrar apenas o documento */
+            .toolbar, .document-header, .document-footer, .action-button,
+            .btn, nav, header, footer, .print-info, .no-print, 
+            .document-meta, .meta-item, button {
+                display: none !important;
+                height: 0 !important;
+                width: 0 !important;
+                max-height: 0 !important;
+                max-width: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: hidden !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+            }
+            
+            /* Garantir que apenas o conteúdo do documento seja exibido */
+            .printable-content {
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                width: 100% !important;
+                height: 100% !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                background: white !important;
+            }
+            
+            /* Mostrar diretamente o conteúdo do documento sem elementos ao redor */
+            .document-content {
+                display: block !important;
+                width: 100% !important;
+                height: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                overflow: visible !important;
+            }
+            
+            .document-header:before {
+                display: none; /* Remover gradiente que pode causar problemas na impressão */
+            }
+            
+            .document-title {
+                font-size: 16pt;
+                color: #000 !important;
+            }
+            
+            .document-meta {
+                justify-content: space-between;
+                flex-wrap: wrap;
+                color: #333 !important;
+            }
+            
+            .meta-item {
+                margin: 2px 5px;
+                font-size: 9pt;
+            }
+            
+            .meta-item i {
+                color: #333 !important;
+            }
+            
+            /* Ajustes para o conteúdo */
+            .document-content {
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+                page-break-inside: auto;
+            }
+            
+            /* Esconder todos os elementos que não são para impressão */
+            .no-print, .toolbar, .print-info, .action-button, 
+            .print-button, .download-link, button, .screen-only > *:not(.printable-content) {
+                display: none !important;
+                height: 0 !important;
+                width: 0 !important;
+                overflow: hidden !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+            }
+            
+            /* Ajustes específicos para visualizadores de documentos */
+            .pdf-container {
+                border: none;
+                height: auto;
+                min-height: 75vh;
+                width: 100%;
+                display: block;
+                page-break-inside: avoid;
+                overflow: visible !important;
+            }
+            
+            iframe {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 80vh !important;
+                overflow: visible !important;
+                display: block !important;
+            }
+            
+            /* Controle de quebras de página */
+            .page-break-before {
+                page-break-before: always;
+            }
+            
+            .page-break-after {
+                page-break-after: always;
+            }
+            
+            .avoid-break {
+                page-break-inside: avoid;
+            }
+            
+            /* Garantir que imagens se ajustem adequadamente */
+            .document-image {
+                max-height: none;
+                width: auto;
+                max-width: 100%;
+                page-break-inside: avoid;
+                margin: 0 auto;
+                display: block;
+            }
+            
+            /* Rodapé fixo na impressão */
+            .document-footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                font-size: 7pt;
+                color: #555;
+                border-top: 0.5pt solid #ccc;
+                padding-top: 0.3cm;
+                background-color: white;
+                text-align: center;
+                z-index: 1000;
+            }
+            
+            /* Evitar que links apareçam com sublinhado ou cores diferentes na impressão */
+            a, a:link, a:visited {
+                text-decoration: none;
+                color: black;
+            }
+            
+            /* Não mostrar URLs dos links ao imprimir */
+            a:after {
+                content: '';
+            }
+            
+            /* Melhorar a aparência das tabelas na impressão */
+            table {
+                border-collapse: collapse !important;
+                width: 100% !important;
+                page-break-inside: auto;
+            }
+            
+            table, th, td {
+                border: 0.5pt solid #ddd !important;
+            }
+            
+            th {
+                background-color: #f2f2f2 !important;
+                font-weight: bold !important;
+                color: black !important;
+            }
+            
+            /* Para evitar conteúdo sendo cortado no final da página */
+            p, h1, h2, h3, h4, h5, h6, blockquote {
+                orphans: 3;
+                widows: 3;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Estrutura dividida em duas partes: interface visível na tela e conteúdo para impressão -->
+    
+    <!-- 1. Interface visível apenas na tela (não na impressão) -->
+    <div class="no-print screen-only">
+        <div class="toolbar">
+            <button onclick="window.print();" class="action-button">
+                <i class="fas fa-print"></i> Imprimir Documento
+            </button>
+            {% if download_link %}
+            <a href="{{ download_link }}" class="action-button secondary">
+                <i class="fas fa-download"></i> Baixar Documento
+            </a>
+            {% endif %}
+            <a href="javascript:history.back()" class="action-button secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+    
+    <!-- 2. Conteúdo puro para impressão - este será o único elemento visível na impressão -->
+    <div class="printable-content">
+        <!-- Conteúdo principal do documento - apenas o documento em si, sem cabeçalhos -->
+        <div class="document-content">
+            {% if error_message %}
+                <div class="error-message">
+                    <p>{{ error_message }}</p>
+                </div>
+            {% elif pdf_path %}
+                <iframe src="{{ pdf_path }}" class="pdf-container" frameborder="0"></iframe>
+            {% elif image_path %}
+                <img src="{{ image_path }}" alt="{{ document.title }}" class="document-image">
+            {% elif office_url %}
+                <iframe src="{{ office_url }}" class="pdf-container" frameborder="0"></iframe>
+            {% elif html_content %}
+                {{ html_content|safe }}
+            {% else %}
+                <div class="info-message no-print">
+                    <p>O conteúdo deste documento não pode ser exibido diretamente.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        // Função para obter data atual
+        function now() {
+            return new Date();
+        }
+        
+        // Função timestamp para o template
+        function timestamp_to_date() {
+            var now = new Date();
+            var day = String(now.getDate()).padStart(2, '0');
+            var month = String(now.getMonth() + 1).padStart(2, '0');
+            var year = now.getFullYear();
+            var hours = String(now.getHours()).padStart(2, '0');
+            var minutes = String(now.getMinutes()).padStart(2, '0');
+            return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes;
+        }
+        
+        // Função para melhorar a impressão de iframes
+        function prepareIframesForPrint() {
+            var iframes = document.querySelectorAll('iframe');
+            
+            iframes.forEach(function(iframe) {
+                // Tentar ajustar altura do iframe para seu conteúdo
+                try {
+                    if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.body) {
+                        var height = iframe.contentWindow.document.body.scrollHeight;
+                        iframe.style.height = height + 'px';
+                    }
+                } catch (e) {
+                    console.log('Não foi possível acessar o conteúdo do iframe:', e);
+                }
+                
+                // Adicionar atributo para impressão
+                iframe.setAttribute('data-print-ready', 'true');
+            });
+        }
+        
+        // Aguardar carregamento total da página e prepará-la para impressão
+        window.addEventListener('load', function() {
+            var urlParams = new URLSearchParams(window.location.search);
+            
+            // Notificar que o documento está sendo carregado para impressão
+            console.log('Carregando documento para impressão...');
+            
+            // Tentar melhorar a renderização dos PDFs
+            setTimeout(function() {
+                prepareIframesForPrint();
+                
+                // Verificar se deve imprimir automaticamente
+                if (urlParams.get('auto_print') === 'true') {
+                    console.log('Iniciando impressão automática...');
+                    setTimeout(function() {
+                        window.print();
+                    }, 1500); // Atraso maior para garantir carregamento completo
+                }
+            }, 800);
+        });
+        
+        // Verificação de carregamento de PDFs e outros documentos incorporados
+        document.addEventListener('DOMContentLoaded', function() {
+            var pdfFrames = document.querySelectorAll('.pdf-container');
+            
+            pdfFrames.forEach(function(frame) {
+                frame.onload = function() {
+                    console.log('Documento incorporado carregado.');
+                    // Avisar que está pronto para impressão
+                    this.setAttribute('data-loaded', 'true');
+                };
+            });
+            
+            // Verificar imagens
+            var images = document.querySelectorAll('.document-image');
+            images.forEach(function(img) {
+                if (img.complete) {
+                    img.setAttribute('data-loaded', 'true');
+                } else {
+                    img.onload = function() {
+                        this.setAttribute('data-loaded', 'true');
+                    };
+                }
+            });
+        });
+        
+        // Corrigir problemas específicos de impressão
+        window.addEventListener('beforeprint', function() {
+            // Preparação final para impressão
+            prepareIframesForPrint();
+            
+            // Esconder elementos desnecessários
+            var elementsToHide = document.querySelectorAll('.no-print, .toolbar');
+            elementsToHide.forEach(function(el) {
+                el.style.display = 'none';
+            });
+            
+            console.log('Preparando documento para impressão...');
+        });
+        
+        // Ajustar após a impressão
+        window.addEventListener('afterprint', function() {
+            console.log('Impressão concluída.');
+            
+            // Restaurar elementos ocultos
+            var elementsToShow = document.querySelectorAll('.no-print, .toolbar');
+            elementsToShow.forEach(function(el) {
+                el.style.display = '';
+            });
+        });
+    </script>
+</body>
+</html>
