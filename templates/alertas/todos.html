@@ -1,0 +1,589 @@
+{% extends 'base.html' %}
+
+{% block title %}Todos os Alertas - Zelopack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .alerts-header {
+        background: linear-gradient(135deg, #FF9800 0%, #E65100 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .alerts-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .alerts-header p {
+        opacity: 0.85;
+        max-width: 80%;
+    }
+    
+    .alert-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 1.5rem;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .alert-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .alert-content {
+        padding: 1.5rem;
+    }
+    
+    .alert-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .alert-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+    
+    .alert-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .alert-subtitle {
+        font-size: 0.85rem;
+        color: #666;
+    }
+    
+    .alert-message {
+        margin-bottom: 1rem;
+    }
+    
+    .alert-info {
+        border-left: 4px solid #0d6efd;
+    }
+    
+    .alert-warning {
+        border-left: 4px solid #ffc107;
+    }
+    
+    .alert-danger {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .alert-success {
+        border-left: 4px solid #198754;
+    }
+    
+    .alert-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .alert-actions button {
+        margin-left: 0.5rem;
+    }
+    
+    .empty-alerts {
+        text-align: center;
+        padding: 3rem 1rem;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+    }
+    
+    .empty-alerts i {
+        font-size: 3rem;
+        color: #ccc;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-alerts h3 {
+        color: #666;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-alerts p {
+        color: #999;
+    }
+    
+    .alert-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .alert-filter {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .alert-filter .form-group {
+        margin-right: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .alert-meta {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .alert-meta span {
+        margin-right: 1rem;
+    }
+    
+    .target-user {
+        padding: 0.2rem 0.5rem;
+        border-radius: 50px;
+        background-color: #e9ecef;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .data-table th {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+    }
+    
+    .data-table td {
+        padding: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .data-table tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .status-active {
+        color: #198754;
+    }
+    
+    .status-inactive {
+        color: #6c757d;
+    }
+    
+    .text-ellipsis {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 250px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho de Alertas -->
+    <div class="alerts-header mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-list-alt me-2"></i> Todos os Alertas</h1>
+                <p class="mb-0">Gerenciamento completo de todos os alertas e notificações do sistema.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <div class="btn-group">
+                    <a href="{{ url_for('alertas.index') }}" class="btn btn-light">
+                        <i class="fas fa-bell me-2"></i> Meus Alertas
+                    </a>
+                    <a href="{{ url_for('alertas.create') }}" class="btn btn-light">
+                        <i class="fas fa-plus me-2"></i> Novo Alerta
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3"><i class="fas fa-filter me-2"></i> Filtros</h5>
+            <div class="alert-filter">
+                <div class="form-group">
+                    <label for="filter-type" class="form-label">Tipo</label>
+                    <select id="filter-type" class="form-select">
+                        <option value="all">Todos</option>
+                        <option value="info">Informação</option>
+                        <option value="warning">Aviso</option>
+                        <option value="danger">Alerta</option>
+                        <option value="success">Sucesso</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-status" class="form-label">Status</label>
+                    <select id="filter-status" class="form-select">
+                        <option value="all">Todos</option>
+                        <option value="active">Ativos</option>
+                        <option value="inactive">Inativos</option>
+                        <option value="read">Lidos</option>
+                        <option value="unread">Não lidos</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-module" class="form-label">Módulo</label>
+                    <select id="filter-module" class="form-select">
+                        <option value="all">Todos</option>
+                        <option value="sistema">Sistema</option>
+                        <option value="reports">Laudos</option>
+                        <option value="users">Usuários</option>
+                        <option value="calculos">Cálculos</option>
+                        <option value="documents">Documentos</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="search-alert" class="form-label">Buscar</label>
+                    <div class="input-group">
+                        <input type="text" id="search-alert" class="form-control" placeholder="Buscar...">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lista de Alertas -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title mb-3"><i class="fas fa-bell me-2"></i> Lista de Alertas</h5>
+            
+            <!-- Tabela de alertas -->
+            {% if alerts %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Mensagem</th>
+                                <th>Tipo</th>
+                                <th>Módulo</th>
+                                <th>Destinatário</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alert in alerts %}
+                                <tr data-alert-id="{{ alert.id }}" data-alert-type="{{ alert.type }}" data-alert-status="{{ 'active' if alert.is_active else 'inactive' }}" data-alert-read="{{ 'read' if alert.is_read else 'unread' }}" data-alert-module="{{ alert.module }}">
+                                    <td class="text-ellipsis">{{ alert.title }}</td>
+                                    <td class="text-ellipsis">{{ alert.message }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ alert.get_color() }}" data-bs-toggle="tooltip" title="{{ alert.type|capitalize }}">
+                                            <i class="{{ alert.get_icon() }}"></i>
+                                        </span>
+                                    </td>
+                                    <td>{{ alert.module|capitalize }}</td>
+                                    <td>
+                                        {% if alert.target_user_id %}
+                                            <span class="target-user">
+                                                {{ alert.target_user.name if alert.target_user else 'ID: ' + alert.target_user_id|string }}
+                                            </span>
+                                        {% else %}
+                                            <span class="target-user">Todos</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if alert.is_active %}
+                                            <span class="status-active"><i class="fas fa-check-circle me-1"></i> Ativo</span>
+                                        {% else %}
+                                            <span class="status-inactive"><i class="fas fa-times-circle me-1"></i> Inativo</span>
+                                        {% endif %}
+                                        {% if alert.is_read %}
+                                            <small class="d-block text-muted">Lido</small>
+                                        {% else %}
+                                            <small class="d-block text-warning">Não lido</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ alert.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                        {% if alert.expires_at %}
+                                            <small class="d-block text-muted">Expira: {{ alert.expires_at.strftime('%d/%m/%Y') }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary view-alert-btn" data-id="{{ alert.id }}" data-bs-toggle="tooltip" title="Ver Detalhes">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% if alert.is_active %}
+                                                <button class="btn btn-sm btn-outline-warning deactivate-btn" data-id="{{ alert.id }}" data-bs-toggle="tooltip" title="Desativar">
+                                                    <i class="fas fa-power-off"></i>
+                                                </button>
+                                            {% endif %}
+                                            <button class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ alert.id }}" data-bs-toggle="tooltip" title="Excluir">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-alerts">
+                    <i class="fas fa-bell-slash"></i>
+                    <h3>Nenhum alerta encontrado</h3>
+                    <p>Não há alertas cadastrados no sistema.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de detalhes do alerta -->
+<div class="modal fade" id="alertDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes do Alerta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alert-detail-content">
+                    <!-- Conteúdo será preenchido via JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ativar o link de alertas no menu
+        const navItems = document.querySelectorAll('.nav-item .nav-link');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const alertsLink = document.querySelector('a[href="{{ url_for("alertas.index") }}"]');
+        if (alertsLink) {
+            alertsLink.classList.add('active');
+        }
+        
+        // Inicializar tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Filtrar alertas
+        const filterType = document.getElementById('filter-type');
+        const filterStatus = document.getElementById('filter-status');
+        const filterModule = document.getElementById('filter-module');
+        const searchInput = document.getElementById('search-alert');
+        
+        function applyFilters() {
+            const typeValue = filterType.value;
+            const statusValue = filterStatus.value;
+            const moduleValue = filterModule.value;
+            const searchValue = searchInput.value.toLowerCase();
+            
+            document.querySelectorAll('tbody tr').forEach(row => {
+                let showRow = true;
+                
+                // Filtro por tipo
+                if (typeValue !== 'all' && row.dataset.alertType !== typeValue) {
+                    showRow = false;
+                }
+                
+                // Filtro por status
+                if (statusValue !== 'all') {
+                    if (statusValue === 'active' && row.dataset.alertStatus !== 'active') {
+                        showRow = false;
+                    }
+                    if (statusValue === 'inactive' && row.dataset.alertStatus !== 'inactive') {
+                        showRow = false;
+                    }
+                    if (statusValue === 'read' && row.dataset.alertRead !== 'read') {
+                        showRow = false;
+                    }
+                    if (statusValue === 'unread' && row.dataset.alertRead !== 'unread') {
+                        showRow = false;
+                    }
+                }
+                
+                // Filtro por módulo
+                if (moduleValue !== 'all' && row.dataset.alertModule !== moduleValue) {
+                    showRow = false;
+                }
+                
+                // Filtro por texto de busca
+                if (searchValue) {
+                    const titleCell = row.cells[0].textContent.toLowerCase();
+                    const messageCell = row.cells[1].textContent.toLowerCase();
+                    if (!titleCell.includes(searchValue) && !messageCell.includes(searchValue)) {
+                        showRow = false;
+                    }
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            });
+        }
+        
+        filterType.addEventListener('change', applyFilters);
+        filterStatus.addEventListener('change', applyFilters);
+        filterModule.addEventListener('change', applyFilters);
+        searchInput.addEventListener('input', applyFilters);
+        
+        // Ver detalhes do alerta
+        const alertDetailModal = new bootstrap.Modal(document.getElementById('alertDetailModal'));
+        
+        document.querySelectorAll('.view-alert-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const alertId = this.getAttribute('data-id');
+                const row = document.querySelector(`tr[data-alert-id="${alertId}"]`);
+                
+                const title = row.cells[0].textContent;
+                const message = row.cells[1].textContent;
+                const type = row.dataset.alertType;
+                const module = row.cells[3].textContent;
+                const recipient = row.cells[4].querySelector('.target-user').textContent;
+                const status = row.cells[5].textContent;
+                const date = row.cells[6].textContent;
+                
+                // Formatar detalhes
+                const detailsContent = `
+                    <div class="alert alert-${type} mb-3">
+                        <h6 class="alert-heading"><i class="${row.cells[2].querySelector('i').className}"></i> ${title}</h6>
+                        <p>${message}</p>
+                    </div>
+                    <dl class="row">
+                        <dt class="col-sm-4">Tipo:</dt>
+                        <dd class="col-sm-8">${type.charAt(0).toUpperCase() + type.slice(1)}</dd>
+                        
+                        <dt class="col-sm-4">Módulo:</dt>
+                        <dd class="col-sm-8">${module}</dd>
+                        
+                        <dt class="col-sm-4">Destinatário:</dt>
+                        <dd class="col-sm-8">${recipient}</dd>
+                        
+                        <dt class="col-sm-4">Status:</dt>
+                        <dd class="col-sm-8">${status}</dd>
+                        
+                        <dt class="col-sm-4">Data:</dt>
+                        <dd class="col-sm-8">${date}</dd>
+                    </dl>
+                `;
+                
+                document.getElementById('alert-detail-content').innerHTML = detailsContent;
+                alertDetailModal.show();
+            });
+        });
+        
+        // Desativar alerta
+        document.querySelectorAll('.deactivate-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                if (confirm('Tem certeza que deseja desativar este alerta?')) {
+                    const alertId = this.getAttribute('data-id');
+                    
+                    // Enviar requisição para desativar
+                    fetch(`/alertas/desativar/${alertId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Atualizar status na tabela
+                            const row = document.querySelector(`tr[data-alert-id="${alertId}"]`);
+                            row.dataset.alertStatus = 'inactive';
+                            
+                            const statusCell = row.cells[5];
+                            statusCell.innerHTML = `
+                                <span class="status-inactive"><i class="fas fa-times-circle me-1"></i> Inativo</span>
+                                ${statusCell.innerHTML.includes('Lido') ? '<small class="d-block text-muted">Lido</small>' : '<small class="d-block text-warning">Não lido</small>'}
+                            `;
+                            
+                            // Remover botão de desativar
+                            this.remove();
+                        } else {
+                            alert('Erro ao desativar alerta: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        alert('Erro ao desativar alerta');
+                    });
+                }
+            });
+        });
+        
+        // Excluir alerta
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                if (confirm('Tem certeza que deseja excluir este alerta? Esta ação não pode ser desfeita.')) {
+                    const alertId = this.getAttribute('data-id');
+                    
+                    // Enviar requisição para excluir
+                    fetch(`/alertas/excluir/${alertId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remover a linha da tabela
+                            const row = document.querySelector(`tr[data-alert-id="${alertId}"]`);
+                            row.remove();
+                            
+                            // Verificar se há linhas restantes
+                            const remainingRows = document.querySelectorAll('tbody tr:not([style*="display: none"])');
+                            if (remainingRows.length === 0) {
+                                // Não há mais alertas, exibir mensagem vazia
+                                document.querySelector('.table-responsive').innerHTML = `
+                                    <div class="empty-alerts">
+                                        <i class="fas fa-bell-slash"></i>
+                                        <h3>Nenhum alerta encontrado</h3>
+                                        <p>Não há alertas cadastrados no sistema.</p>
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            alert('Erro ao excluir alerta: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        alert('Erro ao excluir alerta');
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

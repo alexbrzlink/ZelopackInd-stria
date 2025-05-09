@@ -1,0 +1,645 @@
+{% extends 'base.html' %}
+
+{% block title %}Backup do Banco de Dados - Zelopack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-header {
+        background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .section-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-header p {
+        opacity: 0.85;
+        max-width: 80%;
+    }
+    
+    .backup-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .backup-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .backup-card .card-header {
+        background-color: #f8f9fa;
+        border-bottom: none;
+        padding: 1.25rem;
+    }
+    
+    .backup-card .card-title {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .backup-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .backup-meta {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+    
+    .backup-meta-item {
+        margin-right: 1.5rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .backup-meta-item i {
+        margin-right: 0.5rem;
+        color: #6c757d;
+    }
+    
+    .backup-size {
+        font-weight: 600;
+        background-color: #e9ecef;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+    
+    .backup-progress {
+        height: 10px;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+    }
+    
+    .backup-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .backup-table th {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+    }
+    
+    .backup-table td {
+        padding: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .backup-table tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        color: #ccc;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: #666;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+        color: #999;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho da Seção -->
+    <div class="section-header mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-database me-2"></i> Backup do Banco de Dados</h1>
+                <p class="mb-0">Gerenciamento, agendamento e restauração de backups do banco de dados.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <div class="btn-group">
+                    <a href="{{ url_for('banco_dados.index') }}" class="btn btn-light">
+                        <i class="fas fa-database me-2"></i> Visão Geral
+                    </a>
+                    <a href="{{ url_for('banco_dados.manutencao') }}" class="btn btn-light">
+                        <i class="fas fa-tools me-2"></i> Manutenção
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Backup Manual -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm backup-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-download me-2"></i> Backup Manual</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">Crie um backup completo do banco de dados do sistema. O arquivo será gerado em formato SQL e disponibilizado para download.</p>
+                    
+                    <form method="POST" action="{{ url_for('banco_dados.create_backup') }}" id="manualBackupForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="backup_type" value="manual">
+                        
+                        <div class="mb-3">
+                            <label for="backup_name" class="form-label">Nome do Backup</label>
+                            <input type="text" class="form-control" id="backup_name" name="backup_name" placeholder="Ex: backup_manual_{{ now.strftime('%Y%m%d') }}">
+                            <div class="form-text">Um nome identificador para este backup.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="backup_description" class="form-label">Descrição (opcional)</label>
+                            <textarea class="form-control" id="backup_description" name="backup_description" rows="2" placeholder="Descreva este backup para referência futura"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="include_blobs" name="include_blobs" checked>
+                                <label class="form-check-label" for="include_blobs">
+                                    Incluir dados binários (BLOBs)
+                                </label>
+                                <div class="form-text">Desmarque para criar um backup menor sem arquivos binários.</div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100" id="startBackupBtn">
+                            <i class="fas fa-download me-2"></i> Iniciar Backup
+                        </button>
+                    </form>
+                    
+                    <!-- Progresso do Backup -->
+                    <div id="backupProgress" class="mt-4 d-none">
+                        <h6>Progresso do Backup</h6>
+                        <div class="progress backup-progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted" id="progressStatus">Iniciando...</small>
+                            <small class="text-muted" id="progressPercent">0%</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Backup Automático -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm backup-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-calendar-alt me-2"></i> Backup Automático</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">Configure backups automáticos programados. O sistema executará backups periódicos de acordo com a programação definida.</p>
+                    
+                    <form method="POST" action="{{ url_for('banco_dados.schedule_backup') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label for="schedule_frequency" class="form-label">Frequência</label>
+                            <select class="form-select" id="schedule_frequency" name="schedule_frequency">
+                                <option value="daily">Diário</option>
+                                <option value="weekly" selected>Semanal</option>
+                                <option value="monthly">Mensal</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="schedule_time" class="form-label">Horário</label>
+                            <input type="time" class="form-control" id="schedule_time" name="schedule_time" value="03:00">
+                            <div class="form-text">Recomendamos horários de baixa utilização do sistema.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="retention_days" class="form-label">Retenção</label>
+                            <select class="form-select" id="retention_days" name="retention_days">
+                                <option value="7">7 dias</option>
+                                <option value="14">14 dias</option>
+                                <option value="30" selected>30 dias</option>
+                                <option value="60">60 dias</option>
+                                <option value="90">90 dias</option>
+                            </select>
+                            <div class="form-text">Por quanto tempo os backups automáticos serão mantidos.</div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-calendar-plus me-2"></i> Salvar Programação
+                        </button>
+                    </form>
+                    
+                    <!-- Status do Backup Automático -->
+                    <div class="mt-4">
+                        <div class="alert alert-info d-flex align-items-center" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <div>
+                                <strong>Status:</strong> Backup automático programado para toda segunda-feira às 03:00.
+                                <br>
+                                <small>Próximo backup: Segunda, 16/05/2023 às 03:00</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Histórico de Backups -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="card-title"><i class="fas fa-history me-2"></i> Histórico de Backups</h5>
+        </div>
+        <div class="card-body">
+            {% if backups %}
+                <div class="table-responsive">
+                    <table class="backup-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Tamanho</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for backup in backups %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ backup.name }}</strong>
+                                        {% if backup.description %}
+                                            <small class="d-block text-muted">{{ backup.description }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ backup.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if backup.type == 'manual' %}
+                                            <span class="badge bg-primary">Manual</span>
+                                        {% else %}
+                                            <span class="badge bg-info">Automático</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="backup-size">{{ backup.size_formatted }}</span></td>
+                                    <td>
+                                        {% if backup.status == 'complete' %}
+                                            <span class="text-success"><i class="fas fa-check-circle"></i> Completo</span>
+                                        {% elif backup.status == 'in_progress' %}
+                                            <span class="text-warning"><i class="fas fa-sync fa-spin"></i> Em andamento</span>
+                                        {% else %}
+                                            <span class="text-danger"><i class="fas fa-exclamation-circle"></i> Falha</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('banco_dados.download_backup', backup_id=backup.id) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Baixar">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-success restore-btn" data-id="{{ backup.id }}" data-bs-toggle="tooltip" title="Restaurar">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ backup.id }}" data-bs-toggle="tooltip" title="Excluir">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-database"></i>
+                    <h3>Nenhum backup encontrado</h3>
+                    <p>Não há registros de backups realizados anteriormente.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Restauração de Backup -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="card-title"><i class="fas fa-upload me-2"></i> Restaurar Backup</h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning mb-4" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Aviso:</strong> A restauração de um backup irá sobrescrever todos os dados atuais do banco. Este processo não pode ser desfeito. Certifique-se de fazer um backup do estado atual antes de prosseguir.
+            </div>
+            
+            <form method="POST" action="{{ url_for('banco_dados.restore_backup') }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="mb-4">
+                    <label for="backup_file" class="form-label">Arquivo de Backup</label>
+                    <input type="file" class="form-control" id="backup_file" name="backup_file" accept=".sql, .dump, .gz, .zip">
+                    <div class="form-text">Selecione um arquivo de backup SQL válido (.sql, .dump, .gz ou .zip).</div>
+                </div>
+                
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="confirm_restore" name="confirm_restore" required>
+                    <label class="form-check-label" for="confirm_restore">
+                        Confirmo que entendo que esta ação substituirá todos os dados atuais do banco de dados e que fiz um backup do estado atual caso necessário.
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-danger" disabled id="restoreBtn">
+                    <i class="fas fa-upload me-2"></i> Restaurar Banco de Dados
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Restauração -->
+<div class="modal fade" id="restoreModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Restaurar Backup</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning mb-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Atenção!</strong> Você está prestes a restaurar o banco de dados a partir de um backup. Esta ação sobrescreverá todos os dados atuais e não pode ser desfeita.
+                </div>
+                
+                <p>Deseja continuar com a restauração do backup:</p>
+                <p class="fw-bold backup-name">Nome do Backup</p>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="modalConfirmRestore" required>
+                    <label class="form-check-label" for="modalConfirmRestore">
+                        Confirmo que entendo os riscos e quero prosseguir com a restauração.
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmRestoreBtn" disabled>
+                    <i class="fas fa-upload me-2"></i> Restaurar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ativar o link de banco de dados no menu
+        const navItems = document.querySelectorAll('.nav-item .nav-link');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const dbLink = document.querySelector('a[href="{{ url_for("banco_dados.index") }}"]');
+        if (dbLink) {
+            dbLink.classList.add('active');
+        }
+        
+        // Inicializar tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Modal de restauração
+        const restoreModal = new bootstrap.Modal(document.getElementById('restoreModal'));
+        const confirmRestoreCheckbox = document.getElementById('modalConfirmRestore');
+        const confirmRestoreBtn = document.getElementById('confirmRestoreBtn');
+        
+        // Habilitar/desabilitar botão de restauração baseado no checkbox
+        if (confirmRestoreCheckbox) {
+            confirmRestoreCheckbox.addEventListener('change', function() {
+                confirmRestoreBtn.disabled = !this.checked;
+            });
+        }
+        
+        // Habilitar/desabilitar botão de restauração de arquivo baseado no checkbox
+        const fileRestoreCheckbox = document.getElementById('confirm_restore');
+        const fileRestoreBtn = document.getElementById('restoreBtn');
+        
+        if (fileRestoreCheckbox) {
+            fileRestoreCheckbox.addEventListener('change', function() {
+                fileRestoreBtn.disabled = !this.checked;
+            });
+        }
+        
+        // Abrir modal de restauração ao clicar no botão restaurar
+        document.querySelectorAll('.restore-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const backupId = this.getAttribute('data-id');
+                const backupRow = this.closest('tr');
+                const backupName = backupRow.querySelector('td:first-child strong').textContent;
+                
+                document.querySelector('.backup-name').textContent = backupName;
+                confirmRestoreBtn.setAttribute('data-id', backupId);
+                
+                // Resetar checkbox
+                confirmRestoreCheckbox.checked = false;
+                confirmRestoreBtn.disabled = true;
+                
+                restoreModal.show();
+            });
+        });
+        
+        // Processar restauração quando confirmado
+        confirmRestoreBtn.addEventListener('click', function() {
+            const backupId = this.getAttribute('data-id');
+            
+            // Exibir indicador de carregamento
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Restaurando...';
+            this.disabled = true;
+            
+            // Enviar requisição para restaurar
+            fetch(`/banco-dados/restaurar/${backupId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                restoreModal.hide();
+                
+                if (data.success) {
+                    // Exibir mensagem de sucesso
+                    alert('Backup restaurado com sucesso! A página será recarregada.');
+                    window.location.reload();
+                } else {
+                    // Exibir mensagem de erro
+                    alert('Erro ao restaurar backup: ' + data.message);
+                    this.innerHTML = '<i class="fas fa-upload me-2"></i> Restaurar';
+                    this.disabled = false;
+                }
+            })
+            .catch(error => {
+                restoreModal.hide();
+                console.error('Erro:', error);
+                alert('Erro ao restaurar backup');
+                this.innerHTML = '<i class="fas fa-upload me-2"></i> Restaurar';
+                this.disabled = false;
+            });
+        });
+        
+        // Excluir backup
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                if (confirm('Tem certeza que deseja excluir este backup? Esta ação não pode ser desfeita.')) {
+                    const backupId = this.getAttribute('data-id');
+                    
+                    // Exibir indicador de carregamento
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                    this.disabled = true;
+                    
+                    // Enviar requisição para excluir
+                    fetch(`/banco-dados/excluir-backup/${backupId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remover linha da tabela
+                            this.closest('tr').remove();
+                            
+                            // Verificar se ainda há linhas na tabela
+                            const remainingRows = document.querySelectorAll('.backup-table tbody tr');
+                            if (remainingRows.length === 0) {
+                                // Não há mais backups, exibir mensagem vazia
+                                document.querySelector('.table-responsive').innerHTML = `
+                                    <div class="empty-state">
+                                        <i class="fas fa-database"></i>
+                                        <h3>Nenhum backup encontrado</h3>
+                                        <p>Não há registros de backups realizados anteriormente.</p>
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            // Exibir mensagem de erro
+                            alert('Erro ao excluir backup: ' + data.message);
+                            this.innerHTML = '<i class="fas fa-trash"></i>';
+                            this.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        alert('Erro ao excluir backup');
+                        this.innerHTML = '<i class="fas fa-trash"></i>';
+                        this.disabled = false;
+                    });
+                }
+            });
+        });
+        
+        // Backup manual
+        const manualBackupForm = document.getElementById('manualBackupForm');
+        const startBackupBtn = document.getElementById('startBackupBtn');
+        const backupProgress = document.getElementById('backupProgress');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressStatus = document.getElementById('progressStatus');
+        const progressPercent = document.getElementById('progressPercent');
+        
+        if (manualBackupForm) {
+            manualBackupForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                // Exibir progresso
+                backupProgress.classList.remove('d-none');
+                startBackupBtn.disabled = true;
+                startBackupBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Iniciando...';
+                
+                // Dados do formulário
+                const formData = new FormData(this);
+                
+                // Enviar requisição para criar backup
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Simular progresso (na vida real isso seria atualizado via WebSocket ou polling)
+                        let progress = 0;
+                        const interval = setInterval(() => {
+                            progress += 5;
+                            progressBar.style.width = `${progress}%`;
+                            progressPercent.textContent = `${progress}%`;
+                            
+                            if (progress < 30) {
+                                progressStatus.textContent = 'Preparando backup...';
+                            } else if (progress < 60) {
+                                progressStatus.textContent = 'Exportando dados...';
+                            } else if (progress < 90) {
+                                progressStatus.textContent = 'Compactando arquivo...';
+                            } else {
+                                progressStatus.textContent = 'Finalizando...';
+                            }
+                            
+                            if (progress >= 100) {
+                                clearInterval(interval);
+                                
+                                // Atualizar UI
+                                progressStatus.textContent = 'Backup concluído com sucesso!';
+                                startBackupBtn.innerHTML = '<i class="fas fa-check me-2"></i> Concluído';
+                                
+                                // Recarregar página após alguns segundos
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2000);
+                            }
+                        }, 200);
+                    } else {
+                        // Exibir erro
+                        backupProgress.classList.add('d-none');
+                        startBackupBtn.disabled = false;
+                        startBackupBtn.innerHTML = '<i class="fas fa-download me-2"></i> Iniciar Backup';
+                        alert('Erro ao criar backup: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    backupProgress.classList.add('d-none');
+                    startBackupBtn.disabled = false;
+                    startBackupBtn.innerHTML = '<i class="fas fa-download me-2"></i> Iniciar Backup';
+                    alert('Erro ao criar backup');
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
