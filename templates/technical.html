@@ -112,6 +112,7 @@
                 </div>
                 <div class="card-body">
                     <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <ul class="nav nav-tabs" id="calculatorTabs" role="tablist">
                             <li class="nav-item">
                                 <a class="nav-link active" id="producao-tab" data-toggle="tab" href="#producao" role="tab">Produção</a>

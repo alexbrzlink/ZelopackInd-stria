@@ -172,6 +172,7 @@
         <div class="sidebar">
             <h4>Informações do Documento</h4>
             <form id="document-form" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
                     <label for="empresa">Empresa:</label>
                     <select class="form-control" id="empresa" name="empresa" required>

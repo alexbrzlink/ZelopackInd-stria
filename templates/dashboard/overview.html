@@ -356,6 +356,7 @@
                     <span>{{ backup_info.backup_size }}</span>
                 </div>
                 <form action="{{ url_for('dashboard.manual_backup') }}" method="POST" class="mt-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-primary btn-block">
                         <i class="fas fa-download mr-2"></i> Iniciar Backup Manual
                     </button>
